@@ -3,25 +3,28 @@
 #include "IFontRaster.h"
 #include "freetype.h"
 
-class FontRaster : public IFontRaster
+namespace rendell_text
 {
-public:
-	FontRaster(const std::filesystem::path& fontPath = "");
-	~FontRaster();
+	class FontRaster : public IFontRaster
+	{
+	public:
+		FontRaster(const std::filesystem::path& fontPath = "");
+		~FontRaster();
 
-	bool isInitialized() const override;
-	const std::filesystem::path& getFontPath() const override;
+		bool isInitialized() const override;
+		const std::filesystem::path& getFontPath() const override;
 
-	bool loadFont(const std::filesystem::path& fontPath) override;
+		bool loadFont(const std::filesystem::path& fontPath) override;
 
-	bool rasterize(wchar_t from, wchar_t to, uint32_t width, uint32_t height, FontRasterizationResult& result) override;
+		bool rasterize(wchar_t from, wchar_t to, uint32_t width, uint32_t height, FontRasterizationResult& result) override;
 
-private:
-	bool init();
-	void releaseFace();
-	bool rasterizeChar(wchar_t character, FT_Glyph &result);
-	FT_Glyph rasterizeGlyphStub();
+	private:
+		bool init();
+		void releaseFace();
+		bool rasterizeChar(wchar_t character, FT_Glyph& result);
+		FT_Glyph rasterizeGlyphStub();
 
-	FT_Face _face{ nullptr };
-	std::filesystem::path _fontPath{};
-};
+		FT_Face _face{ nullptr };
+		std::filesystem::path _fontPath{};
+	};
+}

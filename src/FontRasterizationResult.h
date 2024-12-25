@@ -3,16 +3,19 @@
 #include <glm/glm.hpp>
 #include <rendell/rendell.h>
 
-struct RasterizedChar
+namespace rendell_text
 {
-	wchar_t character{};
-	glm::ivec2 glyphSize{};
-	glm::ivec2 glyphBearing{};
-	uint32_t glyphAdvance{};
-};
+	struct RasterizedChar
+	{
+		wchar_t character{};
+		glm::ivec2 glyphSize{};
+		glm::ivec2 glyphBearing{};
+		uint32_t glyphAdvance{};
+	};
 
-struct FontRasterizationResult
-{
-	rendell::Texture2DArray* texture2DArray{};
-	std::vector<RasterizedChar> rasterizedChars{};
-};
+	struct FontRasterizationResult
+	{
+		rendell::Texture2DArray* texture2DArray{};
+		std::vector<RasterizedChar> rasterizedChars{};
+	};
+}
