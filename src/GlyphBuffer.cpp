@@ -11,7 +11,7 @@ namespace rendell_text
 		_range = { from, to };
 
 		_fontRasterizationResult = std::move(fontRasterizationResult);
-		_textures.reset(_fontRasterizationResult.texture2DArray);
+		_textures = _fontRasterizationResult.texture2DArray;
 	}
 
 	void GlyphBuffer::bind(uint32_t textureBlock) const

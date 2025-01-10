@@ -32,7 +32,7 @@ namespace rendell_text
 		std::vector<uint32_t> _textBufferData{};
 		std::vector<glm::vec4> _transformBufferData{};
 
-		std::unique_ptr<rendell::ShaderBuffer> _textBuffer{};
-		std::unique_ptr<rendell::ShaderBuffer> _transformBuffer{};
+		rendell::ShaderBufferSharedPtr _textBuffer{};
+		rendell::ShaderBufferSharedPtr _transformBuffer{};
 	};
 }

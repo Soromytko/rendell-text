@@ -19,8 +19,8 @@ namespace rendell_text
 	static const char* s_vertShaderFilePath = "../res/Shaders/TextRenderer.vs";
 	static const char* s_fragShaderFilePath = "../res/Shaders/TextRenderer.fs";
 
-	static std::unique_ptr<rendell::VertexArray> s_vertexArray;
-	static std::unique_ptr<rendell::ShaderProgram> s_shaderProgram;
+	static rendell::VertexArraySharedPtr s_vertexArray;
+	static rendell::ShaderProgramSharedPtr s_shaderProgram;
 	static std::unique_ptr<RasteredFontStorageManager> s_rasteredFontStorageManager;
 	static uint32_t s_matrixUniformIndex{};
 	static uint32_t s_fontSizeUniformIndex{};
@@ -31,7 +31,7 @@ namespace rendell_text
 	static uint32_t s_instanceCount{};
 	static bool s_initialized = false;
 
-	static rendell::VertexArray* createVertexArray()
+	static rendell::VertexArraySharedPtr createVertexArray()
 	{
 		static std::vector<float> vertexPos{
 			0.0f, 1.0f,
@@ -40,18 +40,18 @@ namespace rendell_text
 			1.0f, 0.0f,
 		};
 
-		rendell::VertexBuffer* vertexBuffer = rendell::createVertexBuffer(vertexPos);
+		rendell::VertexBufferSharedPtr vertexBuffer = rendell::createVertexBuffer(vertexPos);
 		vertexBuffer->setLayouts({ { rendell::ShaderDataType::float2, false, 0 } });
 
-		rendell::VertexArray* vertexArray = rendell::createVertexArray();
+		rendell::VertexArraySharedPtr vertexArray = rendell::createVertexArray();
 		vertexArray->addVertexBuffer(vertexBuffer);
 
 		return vertexArray;
 	}
 
-	static rendell::ShaderProgram* createShaderProgram(std::string&& vertexSrc, std::string&& fragmentSrc)
+	static rendell::ShaderProgramSharedPtr createShaderProgram(std::string&& vertexSrc, std::string&& fragmentSrc)
 	{
-		rendell::ShaderProgram* program = rendell::createShaderProgram(std::move(vertexSrc), std::move(fragmentSrc));
+		rendell::ShaderProgramSharedPtr program = rendell::createShaderProgram(std::move(vertexSrc), std::move(fragmentSrc));
 
 		if (std::string vertInfoLog, fragInfoLog; !program->compile(&vertInfoLog, &fragInfoLog))
 		{
@@ -95,7 +95,7 @@ namespace rendell_text
 	{
 		s_rasteredFontStorageManager.reset(new RasteredFontStorageManager);
 
-		s_vertexArray.reset(createVertexArray());
+		s_vertexArray = createVertexArray();
 
 		std::string vertexSrc, fragmentSrc;
 		if (!loadShaders(vertexSrc, fragmentSrc))
@@ -104,7 +104,7 @@ namespace rendell_text
 			return false;
 		}
 
-		s_shaderProgram.reset(createShaderProgram(std::move(vertexSrc), std::move(fragmentSrc)));
+		s_shaderProgram = createShaderProgram(std::move(vertexSrc), std::move(fragmentSrc));
 
 		if (s_vertexArray != nullptr && s_shaderProgram != nullptr)
 		{
@@ -129,8 +129,8 @@ namespace rendell_text
 	static void releaseStaticRendererStuff()
 	{
 		s_rasteredFontStorageManager.reset(nullptr);
-		s_vertexArray.reset(nullptr);
-		s_shaderProgram.reset(nullptr);
+		s_vertexArray.reset();
+		s_shaderProgram.reset();
 		s_initialized = false;
 	}
 

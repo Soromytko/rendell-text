@@ -15,7 +15,7 @@ namespace rendell_text
 
 	struct FontRasterizationResult
 	{
-		rendell::Texture2DArray* texture2DArray{};
+		rendell::Texture2DArraySharedPtr texture2DArray{};
 		std::vector<RasterizedChar> rasterizedChars{};
 	};
 }

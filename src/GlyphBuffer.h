@@ -21,7 +21,7 @@ namespace rendell_text
 		FontRasterizationResult _fontRasterizationResult{};
 
 		std::pair<wchar_t, wchar_t> _range{};
-		std::unique_ptr<rendell::Texture2DArray> _textures{};
+		rendell::Texture2DArraySharedPtr _textures{};
 	};
 
 	typedef std::shared_ptr<GlyphBuffer> GlyphBufferSharedPtr;

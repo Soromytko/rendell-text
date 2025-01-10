@@ -9,8 +9,8 @@ namespace rendell_text
 		_textBufferData.resize(_length);
 		_transformBufferData.resize(_length);
 
-		_textBuffer.reset(rendell::createShaderBuffer(nullptr, _length * sizeof(uint32_t)));
-		_transformBuffer.reset(rendell::createShaderBuffer(nullptr, _length * sizeof(glm::mat4)));
+		_textBuffer = rendell::createShaderBuffer(nullptr, _length * sizeof(uint32_t));
+		_transformBuffer = rendell::createShaderBuffer(nullptr, _length * sizeof(glm::mat4));
 	}
 
 	void TextBuffer::beginUpdating()
