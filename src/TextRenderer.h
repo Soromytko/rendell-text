@@ -59,4 +59,6 @@ namespace rendell_text
 		std::wstring _text{};
 
 	};
+
+	typedef std::shared_ptr<TextRenderer> TextRendererSharedPtr;
 }
