@@ -308,7 +308,7 @@ namespace rendell_text
 
 			const RasterizedChar& rasterizedChar = textBatch->getGlyphBuffer()->getRasterizedChar(currentCharacter);
 
-			if (currentCharacter != ' ')
+			if (currentCharacter != ' ' && currentCharacter != '\t')
 			{
 				const glm::vec2 glyphOffset = currentOffset + getInstanceLocalOffset(rasterizedChar);
 				textBatch->appendCharacter(currentCharacter, glyphOffset);
