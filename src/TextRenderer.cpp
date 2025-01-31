@@ -227,6 +227,11 @@ namespace rendell_text
 		return _color;
 	}
 
+	const std::vector<uint32_t>& TextRenderer::getTextAdvance() const
+	{
+		return _textAdvance;
+	}
+
 	void TextRenderer::draw()
 	{
 		if (_text.length() == 0) {
@@ -279,6 +284,8 @@ namespace rendell_text
 	void TextRenderer::updateShaderBuffers()
 	{
 		_textBatchesForRendering.clear();
+		_textAdvance.resize(_text.length());
+		auto it = _textAdvance.begin();
 
 		glm::vec2 currentOffset(0.0f, 0.0f);
 		const size_t length = _text.length();
@@ -314,6 +321,7 @@ namespace rendell_text
 				textBatch->appendCharacter(currentCharacter, glyphOffset);
 			}
 
+			*it = (rasterizedChar.glyphAdvance >> 6); it++;
 			currentOffset.x += (rasterizedChar.glyphAdvance >> 6);
 		}
 
