@@ -22,6 +22,30 @@ set(HEADERS
     src/FontRaster.h
 )
 
+set(SHADERS
+    res/Shaders/TextRenderer.vs
+    res/Shaders/TextRenderer.fs
+)
+
+set(GENERATED_SHADER_OUTPUT_DIR generated_shader_headers)
+
+function(generate_shader_header_file input_file output_dir)
+    file(READ "${input_file}" file_content)
+    string(REGEX REPLACE "[/\\.]" "_" variable_name "${input_file}")
+    set(new_content "#pragma once\nstatic const char* ${variable_name} = R\"(\n${file_content}\n)\";")
+    set(file_name "${variable_name}.h")
+    file(WRITE "${output_dir}/${file_name}" "${new_content}")
+endfunction()
+
+function(generate_shader_header_files)
+    foreach(shader_file IN LISTS SHADERS)
+        generate_shader_header_file(${shader_file} ${GENERATED_SHADER_OUTPUT_DIR})
+    endforeach()
+endfunction()
+
+generate_shader_header_files()
+include_directories(${GENERATED_SHADER_OUTPUT_DIR})
+
 add_library(rendell_text ${SOURCES} ${HEADERS})
 target_include_directories(rendell_text PUBLIC include)
 

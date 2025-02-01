@@ -4,6 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "IFontRaster.h"
 #include "RasteredFontStorageManager.h"
+#include "res_Shaders_TextRenderer_vs.h"
+#include "res_Shaders_TextRenderer_fs.h"
 
 #define CHAR_RANGE_SIZE 200
 #define TEXT_BUFFER_SIZE 100
@@ -16,9 +18,6 @@
 
 namespace rendell_text
 {
-	static const char* s_vertShaderFilePath = "../res/Shaders/TextRenderer.vs";
-	static const char* s_fragShaderFilePath = "../res/Shaders/TextRenderer.fs";
-
 	static rendell::VertexArraySharedPtr s_vertexArray;
 	static rendell::ShaderProgramSharedPtr s_shaderProgram;
 	static std::unique_ptr<RasteredFontStorageManager> s_rasteredFontStorageManager;
@@ -68,25 +67,8 @@ namespace rendell_text
 
 	static bool loadShaders(std::string& vertSrcResult, std::string& fragSrcResult)
 	{
-		std::fstream vertStream(s_vertShaderFilePath);
-		if (!vertStream.is_open())
-		{
-			std::cout << "ERROR::TextRenderer: Failed to open file " << s_vertShaderFilePath << std::endl;
-			return false;
-		}
-
-		std::fstream fragStream(s_fragShaderFilePath);
-		if (!fragStream.is_open())
-		{
-			std::cout << "ERROR::TextRenderer: Failed to open file " << s_fragShaderFilePath << std::endl;
-			return false;
-		}
-
-		std::string vertexSrc((std::istreambuf_iterator<char>(vertStream)), std::istreambuf_iterator<char>());
-		std::string fragmentSrc((std::istreambuf_iterator<char>(fragStream)), std::istreambuf_iterator<char>());
-
-		vertSrcResult = std::move(vertexSrc);
-		fragSrcResult = std::move(fragmentSrc);
+		vertSrcResult = res_Shaders_TextRenderer_vs;
+		fragSrcResult = res_Shaders_TextRenderer_fs;
 
 		return true;
 	}
