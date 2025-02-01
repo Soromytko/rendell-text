@@ -28,7 +28,7 @@ namespace rendell_text
 		glm::ivec2 getFontSize() const;
 		const std::wstring& getText() const;
 		const glm::vec4& getColor() const;
-		const std::vector<uint32_t>& getTextAdvance() const;
+		const std::vector<uint32_t>& getTextAdvance();
 
 		void draw();
 

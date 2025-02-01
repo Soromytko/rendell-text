@@ -227,8 +227,9 @@ namespace rendell_text
 		return _color;
 	}
 
-	const std::vector<uint32_t>& TextRenderer::getTextAdvance() const
+	const std::vector<uint32_t>& TextRenderer::getTextAdvance()
 	{
+		updateBuffersIfNeeded();
 		return _textAdvance;
 	}
 
