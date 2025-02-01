@@ -233,6 +233,20 @@ namespace rendell_text
 		return _textAdvance;
 	}
 
+	void TextRenderer::eraseChars(uint32_t startIndex, uint32_t count)
+	{
+		assert(startIndex >= 0 && startIndex + count <= _text.length());
+		_text.erase(startIndex, count);
+		_shouldBuffersBeUpdated = true;
+	}
+
+	void TextRenderer::insertText(uint32_t startIndex, const std::wstring& text)
+	{
+		assert(startIndex >= 0 && startIndex <= _text.length());
+		_text.insert(startIndex, text);
+		_shouldBuffersBeUpdated = true;
+	}
+
 	void TextRenderer::draw()
 	{
 		if (_text.length() == 0) {

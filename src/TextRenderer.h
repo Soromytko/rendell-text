@@ -30,6 +30,9 @@ namespace rendell_text
 		const glm::vec4& getColor() const;
 		const std::vector<uint32_t>& getTextAdvance();
 
+		void eraseChars(uint32_t startIndex, uint32_t count);
+		void insertText(uint32_t startIndex, const std::wstring& text);
+
 		void draw();
 
 	private:
