@@ -16,6 +16,7 @@ namespace rendell_text
 	public:
 		virtual bool isInitialized() const = 0;
 		virtual const std::filesystem::path& getFontPath() const = 0;
+		virtual GeneralFontMetrices getGeneralFontMetrices() const = 0;
 
 		virtual bool loadFont(const std::filesystem::path& fontPath) = 0;
 

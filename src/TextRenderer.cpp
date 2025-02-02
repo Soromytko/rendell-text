@@ -206,6 +206,12 @@ namespace rendell_text
 		return _color;
 	}
 
+	GeneralFontMetrices TextRenderer::getGeneralFontMetrices()
+	{
+		updateBuffersIfNeeded();
+		return _rasteredFontStorage->getFontRaster()->getGeneralFontMetrices();
+	}
+
 	const std::vector<uint32_t>& TextRenderer::getTextAdvance()
 	{
 		updateBuffersIfNeeded();

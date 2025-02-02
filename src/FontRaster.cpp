@@ -44,6 +44,19 @@ namespace rendell_text
 		return _fontPath;
 	}
 
+	GeneralFontMetrices FontRaster::getGeneralFontMetrices() const
+	{
+		FT_Pos lineHeight = _face->size->metrics.height >> 6;
+		FT_Pos ascender = _face->size->metrics.ascender >> 6;
+		FT_Pos descender = _face->size->metrics.descender >> 6;
+
+		GeneralFontMetrices result;
+		result.height = static_cast<int32_t>(lineHeight);
+		result.ascender = static_cast<int32_t>(ascender);
+		result.descender = static_cast<int32_t>(descender);
+		return result;
+	}
+
 	bool FontRaster::loadFont(const std::filesystem::path& fontPath)
 	{
 		releaseFace();

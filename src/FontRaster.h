@@ -13,6 +13,7 @@ namespace rendell_text
 
 		bool isInitialized() const override;
 		const std::filesystem::path& getFontPath() const override;
+		GeneralFontMetrices getGeneralFontMetrices() const override;
 
 		bool loadFont(const std::filesystem::path& fontPath) override;
 

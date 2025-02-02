@@ -28,6 +28,7 @@ namespace rendell_text
 		glm::ivec2 getFontSize() const;
 		const std::wstring& getText() const;
 		const glm::vec4& getColor() const;
+		GeneralFontMetrices getGeneralFontMetrices();
 		const std::vector<uint32_t>& getTextAdvance();
 
 		void eraseChars(uint32_t startIndex, uint32_t count);
