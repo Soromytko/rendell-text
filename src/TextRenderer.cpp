@@ -142,7 +142,9 @@ namespace rendell_text
 
 	void TextRenderer::setFontPath(const std::filesystem::path& fontPath)
 	{
-		_rasteredFontStorage = getRasteredFontStorage(fontPath);
+		_fontPath = fontPath;
+		_shouldFontBeUpdated = true;
+		_shouldBuffersBeUpdated = true;
 	}
 
 	void TextRenderer::setText(const std::wstring& value)
@@ -165,13 +167,8 @@ namespace rendell_text
 	void TextRenderer::setFontSize(const glm::ivec2& fontSize)
 	{
 		_fontSize = fontSize;
-		if (_rasteredFontStorage)
-		{
-			const std::filesystem::path& fontPath = _rasteredFontStorage->getFontRaster()->getFontPath();
-			_rasteredFontStorage = getRasteredFontStorage(fontPath);
-			_shouldTextBatchBeUpdated = true;
-			_shouldBuffersBeUpdated = true;
-		}
+		_shouldFontBeUpdated = true;
+		_shouldBuffersBeUpdated = true;
 	}
 
 	void TextRenderer::setColor(const glm::vec4& color)
@@ -347,13 +344,14 @@ namespace rendell_text
 
 	void TextRenderer::updateBuffersIfNeeded()
 	{
+		if (_shouldFontBeUpdated)
+		{
+			_rasteredFontStorage = getRasteredFontStorage(_fontPath);
+			_textBatchesForRendering.clear();
+			_shouldFontBeUpdated = false;
+		}
 		if (_shouldBuffersBeUpdated)
 		{
-			if (_shouldTextBatchBeUpdated)
-			{
-				_textBatchesForRendering.clear();
-				_shouldTextBatchBeUpdated = false;
-			}
 			_textBatches.clear();
 			updateShaderBuffers();
 			_shouldBuffersBeUpdated = false;
@@ -368,7 +366,9 @@ namespace rendell_text
 			_fontSize.y,
 			CHAR_RANGE_SIZE,
 		};
-		return s_rasteredFontStorageManager->getRasteredFontStorage(preset);
+		const RasteredFontStorageSharedPtr result = s_rasteredFontStorageManager->getRasteredFontStorage(preset);
+		s_rasteredFontStorageManager->clearUnusedCache();
+		return result;
 	}
 
 	TextBatch* TextRenderer::createTextBatch(wchar_t character)

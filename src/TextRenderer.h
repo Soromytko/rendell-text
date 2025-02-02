@@ -49,9 +49,10 @@ namespace rendell_text
 		TextBatch* createTextBatch(wchar_t character);
 
 		bool _shouldBuffersBeUpdated = false;
-		bool _shouldTextBatchBeUpdated = false;
+		bool _shouldFontBeUpdated = false;
 		glm::mat4 _matrix{};
 		glm::ivec2 _fontSize = glm::ivec2(64, 64);
+		std::filesystem::path _fontPath{};
 		glm::vec4 _color{};
 		glm::vec4 _backgroundColor{};
 
