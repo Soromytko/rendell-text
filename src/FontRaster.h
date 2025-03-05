@@ -2,6 +2,7 @@
 #include <iostream>
 #include "IFontRaster.h"
 #include "freetype.h"
+#include "defines.h"
 
 namespace rendell_text
 {
@@ -28,4 +29,6 @@ namespace rendell_text
 		FT_Face _face{ nullptr };
 		std::filesystem::path _fontPath{};
 	};
+
+	DECLARE_SHARED_PTR_FACTORY(FontRaster)
 }

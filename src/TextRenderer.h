@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include "TextBatch.h"
 #include "RasteredFontStorage.h"
+#include "defines.h"
 
 namespace rendell_text
 {
@@ -67,5 +68,5 @@ namespace rendell_text
 
 	};
 
-	typedef std::shared_ptr<TextRenderer> TextRendererSharedPtr;
+	DECLARE_SHARED_PTR_FACTORY(TextRenderer)
 }

@@ -2,7 +2,7 @@
 
 namespace rendell_text
 {
-	RasteredFontStorage::RasteredFontStorage(FontRasterSharedPtr fontRaster, wchar_t charRangeSize) :
+	RasteredFontStorage::RasteredFontStorage(IFontRasterSharedPtr fontRaster, wchar_t charRangeSize) :
 		_fontRaster(fontRaster), _charRangeSize(charRangeSize)
 	{
 
@@ -47,7 +47,7 @@ namespace rendell_text
 		return _fontHeight;
 	}
 
-	const FontRasterSharedPtr RasteredFontStorage::getFontRaster() const
+	const IFontRasterSharedPtr RasteredFontStorage::getFontRaster() const
 	{
 		return _fontRaster;
 	}
@@ -63,6 +63,6 @@ namespace rendell_text
 			return nullptr;
 		}
 
-		return std::make_shared<GlyphBuffer>(from, to, std::move(fontRasterizationResult));
+		return makeGlyphBuffer(from, to, std::move(fontRasterizationResult));
 	}
 }

@@ -2,6 +2,7 @@
 #include <memory>
 #include <filesystem>
 #include "FontRasterizationResult.h"
+#include "defines.h"
 
 namespace rendell_text
 {
@@ -23,5 +24,5 @@ namespace rendell_text
 		virtual bool rasterize(wchar_t from, wchar_t to, uint32_t width, uint32_t height, FontRasterizationResult& result) = 0;
 	};
 
-	typedef std::shared_ptr<IFontRaster> FontRasterSharedPtr;
+	DECLARE_SHARED_PTR(IFontRaster)
 }

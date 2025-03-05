@@ -31,8 +31,8 @@ namespace rendell_text
 			return it->second;
 		}
 
-		FontRasterSharedPtr fontRaster = std::make_shared<FontRaster>(preset.fontPath);
-		RasteredFontStorageSharedPtr rasteredFontStorage = std::make_shared<RasteredFontStorage>(fontRaster, preset.charRangeSize);
+		FontRasterSharedPtr fontRaster = makeFontRaster(preset.fontPath);
+		RasteredFontStorageSharedPtr rasteredFontStorage = makeRasteredFontStorage(fontRaster, preset.charRangeSize);
 		rasteredFontStorage->setFontSize(preset.fontWidth, preset.fontHeight);
 		_rasteredFontStorages[key] = rasteredFontStorage;
 		return rasteredFontStorage;

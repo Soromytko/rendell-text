@@ -4,13 +4,14 @@
 #include <map>
 #include "GlyphBuffer.h"
 #include "IFontRaster.h"
+#include "defines.h"
 
 namespace rendell_text
 {
 	class RasteredFontStorage
 	{
 	public:
-		RasteredFontStorage(FontRasterSharedPtr fontRaster, wchar_t charRangeSize);
+		RasteredFontStorage(IFontRasterSharedPtr fontRaster, wchar_t charRangeSize);
 		~RasteredFontStorage() = default;
 
 		void clearCache();
@@ -20,16 +21,16 @@ namespace rendell_text
 		wchar_t getRangeIndex(wchar_t character) const;
 		uint32_t getFontWidth() const;
 		uint32_t getFontHeight() const;
-		const FontRasterSharedPtr getFontRaster() const;
+		const IFontRasterSharedPtr getFontRaster() const;
 
 	private:
 		GlyphBufferSharedPtr createGlyphBuffer(wchar_t rangeIndex);
 
-		FontRasterSharedPtr _fontRaster;
+		IFontRasterSharedPtr _fontRaster;
 		uint32_t _fontWidth = 64, _fontHeight = 64;
 		const wchar_t _charRangeSize;
 		std::map<wchar_t, std::shared_ptr<GlyphBuffer>> _cachedGlyphBuffers{};
 	};
 
-	typedef std::shared_ptr< RasteredFontStorage> RasteredFontStorageSharedPtr;
+	DECLARE_SHARED_PTR_FACTORY(RasteredFontStorage)
 }

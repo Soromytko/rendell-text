@@ -2,6 +2,7 @@
 #include <memory>
 #include <rendell/rendell.h>
 #include "IFontRaster.h"
+#include "defines.h"
 
 namespace rendell_text
 {
@@ -24,5 +25,5 @@ namespace rendell_text
 		rendell::Texture2DArraySharedPtr _textures{};
 	};
 
-	typedef std::shared_ptr<GlyphBuffer> GlyphBufferSharedPtr;
+	DECLARE_SHARED_PTR_FACTORY(GlyphBuffer)
 }

@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
 set(SOURCES
-    src/rendell_text.cpp
     src/TextRenderer.cpp
     src/TextBatch.cpp
     src/TextBuffer.cpp
@@ -12,7 +11,6 @@ set(SOURCES
 )
 
 set(HEADERS
-    src/rendell_text.h
     src/TextRenderer.h
     src/TextBatch.h
     src/TextBuffer.h
