@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 set(SOURCES
+    src/TextLayout.cpp
     src/TextRenderer.cpp
     src/TextBatch.cpp
     src/TextBuffer.cpp
@@ -11,6 +12,7 @@ set(SOURCES
 )
 
 set(HEADERS
+    src/TextLayout.h
     src/TextRenderer.h
     src/TextBatch.h
     src/TextBuffer.h

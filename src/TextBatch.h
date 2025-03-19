@@ -28,5 +28,5 @@ namespace rendell_text
 
 	};
 
-	typedef std::shared_ptr<TextBuffer> TextBatchSharedPtr;
+	DECLARE_SHARED_PTR_FACTORY(TextBatch)
 }
