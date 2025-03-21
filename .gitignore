@@ -1,2 +1,5 @@
+.vs/
+.vscode/
+
 build
 generated_shader_headers
