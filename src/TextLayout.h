@@ -32,7 +32,8 @@ namespace rendell_text
 		const std::wstring& getText() const;
 		size_t getTextLength() const;
 		uint32_t getFontHeight() const;
-		GeneralFontMetrices getGeneralFontMetrices() const;
+		uint32_t getAscender() const;
+		uint32_t getDescender() const;
 		const std::vector<uint32_t>& getTextAdvance() const;
 
 		void eraseText(uint32_t startIndex);
@@ -47,7 +48,7 @@ namespace rendell_text
 
 		void updateBuffersIfNeeded() const;
 
-		RasteredFontStorageSharedPtr getRasteredFontStorage(const std::filesystem::path& fontPath) const;
+		RasteredFontStorageSharedPtr getRasteredFontStorage() const;
 		TextBatchSharedPtr createTextBatch(wchar_t character) const;
 
 		glm::ivec2 _fontSize = glm::ivec2(64, 64);

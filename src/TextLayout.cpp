@@ -106,9 +106,13 @@ namespace rendell_text
 
 	void TextLayout::setFontPath(const std::filesystem::path& fontPath)
 	{
-		_fontPath = fontPath;
-		_updateActionFlags |= CLEAR_BUFFER_CACHE_FLAG;
-		_updateActionFlags |= UPDATE_BUFFER_FLAG;
+		if (_fontPath != fontPath)
+		{
+			_fontPath = fontPath;
+			_rasteredFontStorage = getRasteredFontStorage();
+			_updateActionFlags |= CLEAR_BUFFER_CACHE_FLAG;
+			_updateActionFlags |= UPDATE_BUFFER_FLAG;
+		}
 	}
 
 	void TextLayout::setText(const std::wstring& value)
@@ -125,9 +129,13 @@ namespace rendell_text
 
 	void TextLayout::setFontSize(const glm::ivec2& fontSize)
 	{
-		_fontSize = fontSize;
-		_updateActionFlags |= CLEAR_BUFFER_CACHE_FLAG;
-		_updateActionFlags |= UPDATE_BUFFER_FLAG;
+		if (_fontSize != fontSize)
+		{
+			_fontSize = fontSize;
+			_rasteredFontStorage = getRasteredFontStorage();
+			_updateActionFlags |= CLEAR_BUFFER_CACHE_FLAG;
+			_updateActionFlags |= UPDATE_BUFFER_FLAG;
+		}
 	}
 
 	const std::filesystem::path& TextLayout::getFontPath() const
@@ -157,13 +165,17 @@ namespace rendell_text
 
 	uint32_t TextLayout::getFontHeight() const
 	{
-		return getGeneralFontMetrices().height;
+		return static_cast<uint32_t>(_rasteredFontStorage->getFontRaster()->getFontHeight());
 	}
 
-	GeneralFontMetrices TextLayout::getGeneralFontMetrices() const
+	uint32_t TextLayout::getAscender() const
 	{
-		updateBuffersIfNeeded();
-		return _rasteredFontStorage->getFontRaster()->getGeneralFontMetrices();
+		return static_cast<uint32_t>(_rasteredFontStorage->getFontRaster()->getAscender());
+	}
+
+	uint32_t TextLayout::getDescender() const
+	{
+		return static_cast<uint32_t>(_rasteredFontStorage->getFontRaster()->getDescender());
 	}
 
 	const std::vector<uint32_t>& TextLayout::getTextAdvance() const
@@ -276,7 +288,7 @@ namespace rendell_text
 	{
 		if (_updateActionFlags & CLEAR_BUFFER_CACHE_FLAG)
 		{
-			_rasteredFontStorage = getRasteredFontStorage(_fontPath);
+			_rasteredFontStorage = getRasteredFontStorage();
 			_cachedTextBatches.clear();
 			_textBatchesForRendering.clear();
 		}
@@ -287,10 +299,10 @@ namespace rendell_text
 		_updateActionFlags = 0;
 	}
 
-	RasteredFontStorageSharedPtr TextLayout::getRasteredFontStorage(const std::filesystem::path& fontPath) const
+	RasteredFontStorageSharedPtr TextLayout::getRasteredFontStorage() const
 	{
 		RasteredFontStoragePreset preset{
-			fontPath.string(),
+			_fontPath.string(),
 			_fontSize.x,
 			_fontSize.y,
 			CHAR_RANGE_SIZE,

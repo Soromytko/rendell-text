@@ -19,10 +19,4 @@ namespace rendell_text
 		std::vector<RasterizedChar> rasterizedChars{};
 	};
 
-	struct GeneralFontMetrices
-	{
-		int32_t height{};
-		int32_t ascender{};
-		int32_t descender{};
-	};
 }

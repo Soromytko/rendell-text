@@ -9,16 +9,19 @@ namespace rendell_text
 	class FontRaster : public IFontRaster
 	{
 	public:
-		FontRaster(const std::filesystem::path& fontPath = "");
+		FontRaster() = default;
+		FontRaster(const std::filesystem::path& fontPath, uint32_t width, uint32_t height);
 		~FontRaster();
 
 		bool isInitialized() const override;
 		const std::filesystem::path& getFontPath() const override;
-		GeneralFontMetrices getGeneralFontMetrices() const override;
+		int getFontHeight() const override;
+		int getAscender() const override;
+		int getDescender() const override;
 
-		bool loadFont(const std::filesystem::path& fontPath) override;
+		bool loadFont(const std::filesystem::path& fontPath, uint32_t width, uint32_t height) override;
 
-		bool rasterize(wchar_t from, wchar_t to, uint32_t width, uint32_t height, FontRasterizationResult& result) override;
+		bool rasterize(wchar_t from, wchar_t to, FontRasterizationResult& result) override;
 
 	private:
 		bool init();
@@ -28,6 +31,8 @@ namespace rendell_text
 
 		FT_Face _face{ nullptr };
 		std::filesystem::path _fontPath{};
+		uint32_t _width{ 24 };
+		uint32_t _height{ 24 };
 	};
 
 	DECLARE_SHARED_PTR_FACTORY(FontRaster)

@@ -15,7 +15,6 @@ namespace rendell_text
 		~RasteredFontStorage() = default;
 
 		void clearCache();
-		void setFontSize(uint32_t width, uint32_t height);
 		GlyphBufferSharedPtr rasterizeGlyphRange(wchar_t rangeIndex);
 
 		wchar_t getRangeIndex(wchar_t character) const;

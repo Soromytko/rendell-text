@@ -13,13 +13,6 @@ namespace rendell_text
 		_cachedGlyphBuffers.clear();
 	}
 
-	void RasteredFontStorage::setFontSize(uint32_t width, uint32_t height)
-	{
-		_fontWidth = width;
-		_fontHeight = height;
-		clearCache();
-	}
-
 	GlyphBufferSharedPtr RasteredFontStorage::rasterizeGlyphRange(wchar_t rangeIndex)
 	{
 		if (auto it = _cachedGlyphBuffers.find(rangeIndex); it != _cachedGlyphBuffers.end())
@@ -57,7 +50,7 @@ namespace rendell_text
 		const wchar_t from = rangeIndex * _charRangeSize;
 		const wchar_t to = (rangeIndex + 1) * _charRangeSize;
 		FontRasterizationResult fontRasterizationResult;
-		if (!_fontRaster->rasterize(from, to, _fontWidth, _fontHeight, fontRasterizationResult))
+		if (!_fontRaster->rasterize(from, to, fontRasterizationResult))
 		{
 			std::cout << "ERROR::RasteredFontStorage: Rasterization failure, {" << from << ", " << to << "}" << std::endl;
 			return nullptr;

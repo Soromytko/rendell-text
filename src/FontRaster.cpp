@@ -6,7 +6,7 @@ namespace rendell_text
 	static bool s_freeTypeInitialized = false;
 	static FT_Library s_freetype;
 
-	FontRaster::FontRaster(const std::filesystem::path& fontPath)
+	FontRaster::FontRaster(const std::filesystem::path& fontPath, uint32_t width, uint32_t height)
 	{
 		s_instanceCount++;
 
@@ -18,7 +18,7 @@ namespace rendell_text
 
 		if (!fontPath.empty())
 		{
-			loadFont(fontPath);
+			loadFont(fontPath, width, height);
 		}
 	}
 
@@ -44,37 +44,42 @@ namespace rendell_text
 		return _fontPath;
 	}
 
-	GeneralFontMetrices FontRaster::getGeneralFontMetrices() const
+	int FontRaster::getFontHeight() const
 	{
-		FT_Pos lineHeight = _face->size->metrics.height >> 6;
-		FT_Pos ascender = _face->size->metrics.ascender >> 6;
-		FT_Pos descender = _face->size->metrics.descender >> 6;
-
-		GeneralFontMetrices result;
-		result.height = static_cast<int32_t>(lineHeight);
-		result.ascender = static_cast<int32_t>(ascender);
-		result.descender = static_cast<int32_t>(descender);
-		return result;
+		const FT_Pos lineHeight = _face->size->metrics.height >> 6;
+		return lineHeight;
 	}
 
-	bool FontRaster::loadFont(const std::filesystem::path& fontPath)
+	int FontRaster::getAscender() const
+	{
+		const FT_Pos ascender = _face->size->metrics.ascender >> 6;
+		return ascender;
+	}
+
+	int FontRaster::getDescender() const
+	{
+		const FT_Pos descender = _face->size->metrics.descender >> 6;
+		return descender;
+	}
+
+	bool FontRaster::loadFont(const std::filesystem::path& fontPath, uint32_t width, uint32_t height)
 	{
 		releaseFace();
 
 		_fontPath = fontPath;
+		_width = width;
+		_height = height;
 		const std::string& path = _fontPath.string();
 		if (path.empty() || FT_New_Face(s_freetype, path.c_str(), 0, &_face)) {
 			std::cout << "ERROR::FREETYPE: Failed to create font face " << fontPath << std::endl;
 			return false;
 		}
+		FT_Set_Pixel_Sizes(_face, _width, _height);
 
 		return true;
 	}
 
-	bool FontRaster::rasterize(
-		wchar_t from, wchar_t to,
-		uint32_t width, uint32_t height,
-		FontRasterizationResult& result)
+	bool FontRaster::rasterize(wchar_t from, wchar_t to, FontRasterizationResult& result)
 	{
 #ifdef _DEBUG
 		assert(s_freeTypeInitialized);
@@ -87,10 +92,8 @@ namespace rendell_text
 			return false;
 		}
 
-		FT_Set_Pixel_Sizes(_face, width, height);
-
 		const size_t charCount = static_cast<size_t>(to - from);
-		auto texture2DArray = rendell::createTexture2DArray(width, height, charCount, rendell::TextureFormat::R);
+		auto texture2DArray = rendell::createTexture2DArray(_width, _height, charCount, rendell::TextureFormat::R);
 		std::vector<RasterizedChar> rasterizedChars{};
 		rasterizedChars.reserve(charCount);
 
