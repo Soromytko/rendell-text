@@ -63,5 +63,5 @@ namespace rendell_text
 
 	};
 
-	DECLARE_SHARED_PTR_FACTORY(TextLayout)
+	RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(TextLayout)
 }

@@ -35,5 +35,5 @@ namespace rendell_text
 		uint32_t _height{ 24 };
 	};
 
-	DECLARE_SHARED_PTR_FACTORY(FontRaster)
+	RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(FontRaster)
 }

@@ -40,5 +40,5 @@ namespace rendell_text
 
 	};
 
-	DECLARE_SHARED_PTR_FACTORY(TextRenderer)
+	RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(TextRenderer)
 }

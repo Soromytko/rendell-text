@@ -26,5 +26,5 @@ namespace rendell_text
 		virtual bool rasterize(wchar_t from, wchar_t to, FontRasterizationResult& result) = 0;
 	};
 
-	DECLARE_SHARED_PTR(IFontRaster)
+	RENDELL_TEXT_DECLARE_SHARED_PTR(IFontRaster)
 }

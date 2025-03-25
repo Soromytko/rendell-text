@@ -28,5 +28,5 @@ namespace rendell_text
 
 	};
 
-	DECLARE_SHARED_PTR_FACTORY(TextBatch)
+	RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(TextBatch)
 }

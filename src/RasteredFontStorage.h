@@ -31,5 +31,5 @@ namespace rendell_text
 		std::map<wchar_t, std::shared_ptr<GlyphBuffer>> _cachedGlyphBuffers{};
 	};
 
-	DECLARE_SHARED_PTR_FACTORY(RasteredFontStorage)
+	RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(RasteredFontStorage)
 }

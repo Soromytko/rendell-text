@@ -25,5 +25,5 @@ namespace rendell_text
 		rendell::Texture2DArraySharedPtr _textures{};
 	};
 
-	DECLARE_SHARED_PTR_FACTORY(GlyphBuffer)
+	RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(GlyphBuffer)
 }
