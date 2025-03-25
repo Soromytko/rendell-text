@@ -213,7 +213,7 @@ namespace rendell_text
 		const glm::ivec2 fontSize = _textLayout->getFontSize();
 
 		s_shaderProgram->setUniformMat4(s_matrixUniformIndex, reinterpret_cast<const float*>(&_matrix));
-		s_shaderProgram->setUniformFloat2(s_fontSizeUniformIndex, fontSize.x, fontSize.y);
+		s_shaderProgram->setUniformFloat2(s_fontSizeUniformIndex, static_cast<float>(fontSize.x), static_cast<float>(fontSize.y));
 		s_shaderProgram->setUniformFloat4(s_colorUniformIndex, _color.r, _color.g, _color.b, _color.a);
 		s_shaderProgram->setUniformVec4(s_backgroundColorUniformIndex, reinterpret_cast<const float*>(&_backgroundColor));
 	}

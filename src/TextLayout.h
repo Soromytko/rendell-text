@@ -36,9 +36,9 @@ namespace rendell_text
 		uint32_t getDescender() const;
 		const std::vector<uint32_t>& getTextAdvance() const;
 
-		void eraseText(uint32_t startIndex);
-		void eraseText(uint32_t startIndex, uint32_t count);
-		void insertText(const std::wstring& text, uint32_t startIndex = 0);
+		void eraseText(size_t startIndex);
+		void eraseText(size_t startIndex, size_t count);
+		void insertText(const std::wstring& text, size_t startIndex = 0);
 		void appendText(const std::wstring& text);
 
 	private:

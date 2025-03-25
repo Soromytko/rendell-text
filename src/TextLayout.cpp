@@ -145,7 +145,8 @@ namespace rendell_text
 			return _rasteredFontStorage->getFontRaster()->getFontPath();
 		}
 
-		return {};
+		static const std::filesystem::path emptyPath;
+		return emptyPath;
 	}
 
 	glm::ivec2 TextLayout::getFontSize() const
@@ -184,19 +185,19 @@ namespace rendell_text
 		return _textAdvance;
 	}
 
-	void TextLayout::eraseText(uint32_t startIndex)
+	void TextLayout::eraseText(size_t startIndex)
 	{
 		eraseText(startIndex, _text.length() - startIndex);
 	}
 
-	void TextLayout::eraseText(uint32_t startIndex, uint32_t count)
+	void TextLayout::eraseText(size_t startIndex, size_t count)
 	{
 		assert(startIndex >= 0 && startIndex + count <= _text.length());
 		_text.erase(startIndex, count);
 		_updateActionFlags |= UPDATE_BUFFER_FLAG;
 	}
 
-	void TextLayout::insertText(const std::wstring& text, uint32_t startIndex)
+	void TextLayout::insertText(const std::wstring& text, size_t startIndex)
 	{
 		assert(startIndex >= 0 && startIndex <= _text.length());
 		_text.insert(startIndex, text);
@@ -275,7 +276,7 @@ namespace rendell_text
 			}
 
 			currentOffset.x += (rasterizedChar.glyphAdvance >> 6);
-			*it = currentOffset.x; it++;
+			*it = static_cast<uint32_t>(currentOffset.x); it++;
 		}
 
 		for (const TextBatchSharedPtr& textBatch : _textBatchesForRendering)
@@ -303,8 +304,8 @@ namespace rendell_text
 	{
 		RasteredFontStoragePreset preset{
 			_fontPath.string(),
-			_fontSize.x,
-			_fontSize.y,
+			static_cast<uint32_t>(_fontSize.x),
+			static_cast<uint32_t>(_fontSize.y),
 			CHAR_RANGE_SIZE,
 		};
 		const RasteredFontStorageSharedPtr result = s_rasteredFontStorageManager->getRasteredFontStorage(preset);

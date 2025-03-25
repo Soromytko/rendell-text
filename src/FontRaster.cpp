@@ -92,7 +92,7 @@ namespace rendell_text
 			return false;
 		}
 
-		const size_t charCount = static_cast<size_t>(to - from);
+		const uint32_t charCount = static_cast<uint32_t>(to - from);
 		auto texture2DArray = rendell::createTexture2DArray(_width, _height, charCount, rendell::TextureFormat::R);
 		std::vector<RasterizedChar> rasterizedChars{};
 		rasterizedChars.reserve(charCount);
