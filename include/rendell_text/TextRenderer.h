@@ -4,8 +4,8 @@
 #include <rendell/rendell.h>
 #include <glm/glm.hpp>
 #include "TextLayout.h"
-#include "TextBatch.h"
-#include "RasteredFontStorage.h"
+#include "private/TextBatch.h"
+#include "private/RasteredFontStorage.h"
 #include "defines.h"
 
 namespace rendell_text

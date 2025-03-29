@@ -1,4 +1,4 @@
-#include "TextBuffer.h"
+#include <rendell_text/private/TextBatch.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 

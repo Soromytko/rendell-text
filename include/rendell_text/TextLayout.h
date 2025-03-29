@@ -3,10 +3,9 @@
 #include <unordered_set>
 #include <rendell/rendell.h>
 #include <glm/glm.hpp>
-#include "TextLayout.h"
-#include "TextBatch.h"
-#include "RasteredFontStorage.h"
 #include "defines.h"
+#include "private/TextBatch.h"
+#include "private/RasteredFontStorage.h"
 
 namespace rendell_text
 {

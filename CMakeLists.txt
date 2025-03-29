@@ -5,21 +5,26 @@ set(SOURCES
     src/TextRenderer.cpp
     src/TextBatch.cpp
     src/TextBuffer.cpp
+    src/GlyphBuffer.cpp
     src/RasteredFontStorage.cpp
     src/RasteredFontStorageManager.cpp
-    src/GlyphBuffer.cpp
     src/FontRaster.cpp
 )
 
 set(HEADERS
-    src/TextLayout.h
-    src/TextRenderer.h
-    src/TextBatch.h
-    src/TextBuffer.h
-    src/RasteredFontStorage.h
+    include/rendell_text/rendell_text.h
+    include/rendell_text/defines.h
+    include/rendell_text/TextLayout.h
+    include/rendell_text/TextRenderer.h
+    include/rendell_text/private/TextBatch.h
+    include/rendell_text/private/TextBuffer.h
+    include/rendell_text/private/GlyphBuffer.h
+    include/rendell_text/private/IFontRaster.h
+    include/rendell_text/private/FontRasterizationResult.h
+    include/rendell_text/private/RasteredFontStorage.h
     src/RasteredFontStorageManager.h
-    src/GlyphBuffer.h
     src/FontRaster.h
+    src/freetype.h
 )
 
 set(SHADERS
@@ -46,6 +51,7 @@ endfunction()
 generate_shader_header_files()
 include_directories(${GENERATED_SHADER_OUTPUT_DIR})
 
+include_directories(include)
 add_library(rendell_text ${SOURCES} ${HEADERS})
 target_include_directories(rendell_text PUBLIC include)
 

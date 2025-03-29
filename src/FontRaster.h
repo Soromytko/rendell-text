@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
-#include "IFontRaster.h"
+#include <rendell_text/defines.h>
+#include <rendell_text/private/IFontRaster.h>
 #include "freetype.h"
-#include "defines.h"
 
 namespace rendell_text
 {

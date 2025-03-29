@@ -1,4 +1,4 @@
-#include "RasteredFontStorage.h"
+#include <rendell_text/private/RasteredFontStorage.h>
 
 namespace rendell_text
 {

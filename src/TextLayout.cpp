@@ -1,8 +1,8 @@
-#include "TextLayout.h"
+#include <rendell_text/TextLayout.h>
 #include <fstream>
 #include <memory>
 #include <glm/gtc/matrix_transform.hpp>
-#include "IFontRaster.h"
+#include <rendell_text/private/IFontRaster.h>
 #include "RasteredFontStorageManager.h"
 
 #define CHAR_RANGE_SIZE 200

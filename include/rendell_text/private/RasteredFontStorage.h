@@ -2,9 +2,9 @@
 #include <memory>
 #include <string>
 #include <map>
-#include "GlyphBuffer.h"
-#include "IFontRaster.h"
-#include "defines.h"
+#include <rendell_text/defines.h>
+#include <rendell_text/private/IFontRaster.h>
+#include <rendell_text/private/GlyphBuffer.h>
 
 namespace rendell_text
 {

@@ -1,8 +1,8 @@
-#include "TextRenderer.h"
+#include <rendell_text/TextRenderer.h>
 #include <fstream>
 #include <memory>
 #include <glm/gtc/matrix_transform.hpp>
-#include "IFontRaster.h"
+#include <rendell_text/private/IFontRaster.h>
 #include "RasteredFontStorageManager.h"
 #include "res_Shaders_TextRenderer_vs.h"
 #include "res_Shaders_TextRenderer_fs.h"

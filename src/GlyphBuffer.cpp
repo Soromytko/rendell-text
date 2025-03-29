@@ -1,4 +1,4 @@
-#include "GlyphBuffer.h"
+#include <rendell_text/private/GlyphBuffer.h>
 
 namespace rendell_text
 {

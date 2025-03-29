@@ -1,8 +1,8 @@
 #pragma once
 #include <memory>
 #include <filesystem>
+#include <rendell_text/defines.h>
 #include "FontRasterizationResult.h"
-#include "defines.h"
 
 namespace rendell_text
 {

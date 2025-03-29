@@ -1,4 +1,4 @@
-#include "TextBatch.h"
+#include <rendell_text/private/TextBatch.h>
 
 namespace rendell_text
 {
