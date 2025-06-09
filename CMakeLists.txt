@@ -55,9 +55,6 @@ include_directories(include)
 add_library(rendell_text ${SOURCES} ${HEADERS})
 target_include_directories(rendell_text PUBLIC include)
 
-target_link_libraries(rendell_text PRIVATE ${RENDELL_LIB})
-target_link_libraries(rendell_text PRIVATE ${GLM_LIB})
-
 # FreeType
 add_subdirectory(freetype)
 target_link_libraries(rendell_text PRIVATE freetype)
