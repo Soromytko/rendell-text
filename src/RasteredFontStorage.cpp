@@ -1,4 +1,5 @@
 #include <rendell_text/private/RasteredFontStorage.h>
+#include <logging.h>
 
 namespace rendell_text
 {
@@ -52,7 +53,7 @@ namespace rendell_text
 		FontRasterizationResult fontRasterizationResult;
 		if (!_fontRaster->rasterize(from, to, fontRasterizationResult))
 		{
-			std::cout << "ERROR::RasteredFontStorage: Rasterization failure, {" << from << ", " << to << "}" << std::endl;
+			RT_ERROR("Rasterization failure: {{{}, {}}}", static_cast<size_t>(from), static_cast<size_t>(to));
 			return nullptr;
 		}
 

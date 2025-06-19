@@ -12,7 +12,7 @@ namespace rendell_text
 
 		if (!init())
 		{
-			std::cout << "ERROR::FontRaster: Initialization failure" << std::endl;
+			RT_ERROR("Initialization failure");
 			return;
 		}
 
@@ -71,7 +71,7 @@ namespace rendell_text
 		_height = height;
 		const std::string& path = _fontPath.string();
 		if (path.empty() || FT_New_Face(s_freetype, path.c_str(), 0, &_face)) {
-			std::cout << "ERROR::FREETYPE: Failed to create font face " << fontPath << std::endl;
+			RT_ERROR("Failed to create font face {}", fontPath.string());
 			return false;
 		}
 		FT_Set_Pixel_Sizes(_face, _width, _height);
@@ -88,7 +88,7 @@ namespace rendell_text
 
 		if (!_face)
 		{
-			std::cout << "ERROR::FREETYPE: Font face is missing" << std::endl;
+			RT_ERROR("Font face is missing");
 			return false;
 		}
 
@@ -102,7 +102,7 @@ namespace rendell_text
 			FT_Glyph glyph;
 			if (!rasterizeChar(currentChar, glyph))
 			{
-				std::cout << "ERROR::FREETYTPE: Failed to rasterize Glyph " << currentChar << std::endl;
+				RT_ERROR("Failed to rasterize Glyph {}", static_cast<char>(currentChar));
 				glyph = rasterizeGlyphStub();
 			}
 
@@ -142,7 +142,7 @@ namespace rendell_text
 			s_freeTypeInitialized = initFreeType();
 			if (!s_freeTypeInitialized)
 			{
-				std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+				RT_ERROR("Could not init FreeType Library");
 				return false;
 			}
 		}
@@ -163,13 +163,13 @@ namespace rendell_text
 	{
 		if (FT_Load_Char(_face, character, FT_LOAD_RENDER))
 		{
-			std::cout << "ERROR::FREETYPE: Failed to load Glyph " << character << std::endl;
+			RT_ERROR("Failed to load Glyph {}", static_cast<char>(character));
 			return false;
 		}
 
 		if (FT_Get_Glyph(_face->glyph, &result))
 		{
-			std::cout << "ERROR::FREETYPE: Failed to get Glyph " << character << std::endl;
+			RT_ERROR("Failed to get Glyph {}", static_cast<char>(character));
 			return false;
 		}
 

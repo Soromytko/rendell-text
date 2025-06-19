@@ -1,6 +1,7 @@
 #include <rendell_text/TextLayout.h>
 #include <fstream>
 #include <memory>
+#include <logging.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <rendell_text/private/IFontRaster.h>
 #include "RasteredFontStorageManager.h"
@@ -41,12 +42,12 @@ namespace rendell_text
 
 		if (std::string vertInfoLog, fragInfoLog; !program->compile(&vertInfoLog, &fragInfoLog))
 		{
-			std::cout << "ERROR::TextLayout: Shader compilation failure:\n" << vertInfoLog << fragInfoLog << std::endl;
+			RT_ERROR("Shader compilation failure:\n{}\n{}", vertInfoLog, fragInfoLog);
 			return nullptr;
 		}
 		if (std::string infoLog; !program->link(&infoLog))
 		{
-			std::cout << "ERROR::TextLayout: Shader linking failure:\n" << infoLog << std::endl;
+			RT_ERROR("ERROR::TextLayout: Shader linking failure:\n{}", infoLog);
 			return nullptr;
 		}
 		return program;
@@ -257,7 +258,7 @@ namespace rendell_text
 			const TextBatchSharedPtr& textBatch = createTextBatch(currentCharacter);
 			if (!textBatch)
 			{
-				std::cout << "ERROR::TextLayout: Failed to create text batch" << std::endl;
+				std::cout << "ERROR::TextLayout: Failed to create text batch";
 				return;
 			}
 

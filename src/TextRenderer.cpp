@@ -1,6 +1,7 @@
 #include <rendell_text/TextRenderer.h>
 #include <fstream>
 #include <memory>
+#include <logging.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <rendell_text/private/IFontRaster.h>
 #include "RasteredFontStorageManager.h"
@@ -51,12 +52,12 @@ namespace rendell_text
 
 		if (std::string vertInfoLog, fragInfoLog; !program->compile(&vertInfoLog, &fragInfoLog))
 		{
-			std::cout << "ERROR::TextRenderer: Shader compilation failure:\n" << vertInfoLog << fragInfoLog << std::endl;
+			RT_ERROR("Shader compilation failure:\n{}\n{}", vertInfoLog, fragInfoLog);
 			return nullptr;
 		}
 		if (std::string infoLog; !program->link(&infoLog))
 		{
-			std::cout << "ERROR::TextRenderer: Shader linking failure:\n" << infoLog << std::endl;
+			RT_ERROR("Shader linking failure:\n{}", infoLog);
 			return nullptr;
 		}
 		return program;
@@ -79,7 +80,7 @@ namespace rendell_text
 		std::string vertexSrc, fragmentSrc;
 		if (!loadShaders(vertexSrc, fragmentSrc))
 		{
-			std::cout << "ERROR::TextRenderer: Shader loading failed" << std::endl;
+			RT_ERROR("Shader loading failed");
 			return false;
 		}
 

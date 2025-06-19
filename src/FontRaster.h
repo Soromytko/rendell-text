@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+#include <logging.h>
 #include <rendell_text/defines.h>
 #include <rendell_text/private/IFontRaster.h>
 #include "freetype.h"

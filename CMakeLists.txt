@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
+set(CMAKE_CXX_STANDARD 23)
+
 set(SOURCES
     src/TextLayout.cpp
     src/TextRenderer.cpp
@@ -9,6 +11,7 @@ set(SOURCES
     src/RasteredFontStorage.cpp
     src/RasteredFontStorageManager.cpp
     src/FontRaster.cpp
+    src/logging.cpp
 )
 
 set(HEADERS
@@ -22,6 +25,7 @@ set(HEADERS
     include/rendell_text/private/IFontRaster.h
     include/rendell_text/private/FontRasterizationResult.h
     include/rendell_text/private/RasteredFontStorage.h
+    internal/logging.h
     src/RasteredFontStorageManager.h
     src/FontRaster.h
     src/freetype.h
@@ -54,6 +58,17 @@ include_directories(${GENERATED_SHADER_OUTPUT_DIR})
 include_directories(include)
 add_library(rendell_text ${SOURCES} ${HEADERS})
 target_include_directories(rendell_text PUBLIC include)
+target_include_directories(rendell_text PRIVATE internal)
+
+include(FetchContent)
+
+# LogX
+FetchContent_Declare(
+  logx
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx
+  GIT_TAG ec691f85d22330f4ebd268ffcf6cc0ae7a7dd4f9
+)
+target_link_libraries(rendell_text PRIVATE logx)
 
 # FreeType
 add_subdirectory(freetype)
