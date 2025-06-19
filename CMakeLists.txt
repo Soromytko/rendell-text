@@ -1,6 +1,11 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.14)
+
+project(RendellText)
 
 set(CMAKE_CXX_STANDARD 23)
+
+set(RENDELL_TEXT_RENDELL_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../rendell)
+set(RENDELL_TEXT_LOGX_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx)
 
 set(SOURCES
     src/TextLayout.cpp
@@ -55,20 +60,38 @@ endfunction()
 generate_shader_header_files()
 include_directories(${GENERATED_SHADER_OUTPUT_DIR})
 
-include_directories(include)
-add_library(rendell_text ${SOURCES} ${HEADERS})
+add_library(rendell_text STATIC ${SOURCES} ${HEADERS})
 target_include_directories(rendell_text PUBLIC include)
 target_include_directories(rendell_text PRIVATE internal)
 
 include(FetchContent)
 
+# glm
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.0
+)
+FetchContent_MakeAvailable(glm)
+target_link_libraries(rendell_text PRIVATE glm)
+
 # LogX
 FetchContent_Declare(
-  logx
-  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx
-  GIT_TAG ec691f85d22330f4ebd268ffcf6cc0ae7a7dd4f9
+    logx
+    SOURCE_DIR ${RENDELL_TEXT_LOGX_REPO_DIR}
+    GIT_TAG ec691f85d22330f4ebd268ffcf6cc0ae7a7dd4f9
 )
+FetchContent_MakeAvailable(logx)
 target_link_libraries(rendell_text PRIVATE logx)
+
+# Rendell
+FetchContent_Declare(
+    rendell
+    SOURCE_DIR ${RENDELL_TEXT_RENDELL_REPO_DIR}
+    GIT_TAG 4d08c2416c71cad1e492fb5955ab4b09bb45d71b
+)
+FetchContent_MakeAvailable(rendell)
+target_link_libraries(rendell_text PRIVATE rendell)
 
 # FreeType
 add_subdirectory(freetype)
