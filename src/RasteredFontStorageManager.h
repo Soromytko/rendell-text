@@ -1,31 +1,28 @@
 #pragma once
-#include <map>
 #include <filesystem>
+#include <map>
 #include <rendell_text/private/RasteredFontStorage.h>
 
-namespace rendell_text
-{
-	struct RasteredFontStoragePreset
-	{
-		std::filesystem::path fontPath{};
-		uint32_t fontWidth{};
-		uint32_t fontHeight{};
-		wchar_t charRangeSize{};
-	};
+namespace rendell_text {
+struct RasteredFontStoragePreset {
+    std::filesystem::path fontPath{};
+    uint32_t fontWidth{};
+    uint32_t fontHeight{};
+    wchar_t charRangeSize{};
+};
 
-	class RasteredFontStorageManager
-	{
-	public:
-		RasteredFontStorageManager() = default;
-		~RasteredFontStorageManager() = default;
+class RasteredFontStorageManager {
+public:
+    RasteredFontStorageManager() = default;
+    ~RasteredFontStorageManager() = default;
 
-		void clearUnusedCache();
+    void clearUnusedCache();
 
-		RasteredFontStorageSharedPtr getRasteredFontStorage(const RasteredFontStoragePreset& preset);
+    RasteredFontStorageSharedPtr getRasteredFontStorage(const RasteredFontStoragePreset &preset);
 
-	private:
-		size_t hashFontPreset(const RasteredFontStoragePreset& preset) const;
+private:
+    size_t hashFontPreset(const RasteredFontStoragePreset &preset) const;
 
-		std::map<size_t, RasteredFontStorageSharedPtr> _rasteredFontStorages{};
-	};
-}
+    std::map<size_t, RasteredFontStorageSharedPtr> _rasteredFontStorages{};
+};
+} // namespace rendell_text

@@ -1,32 +1,29 @@
 #pragma once
-#include <memory>
-#include <glm/glm.hpp>
 #include "GlyphBuffer.h"
 #include "TextBuffer.h"
+#include <glm/glm.hpp>
+#include <memory>
 
-namespace rendell_text
-{
-	struct TextBatch
-	{
-	public:
-		TextBatch(GlyphBufferSharedPtr glyphBuffer, size_t textBufferSize);
-		~TextBatch() = default;
+namespace rendell_text {
+struct TextBatch {
+public:
+    TextBatch(GlyphBufferSharedPtr glyphBuffer, size_t textBufferSize);
+    ~TextBatch() = default;
 
-		void beginUpdating();
-		void appendCharacter(wchar_t character, glm::vec2 offset);
-		void endUpdating();
+    void beginUpdating();
+    void appendCharacter(wchar_t character, glm::vec2 offset);
+    void endUpdating();
 
-		const GlyphBuffer* getGlyphBuffer() const;
-		const std::vector<std::unique_ptr<TextBuffer>>& GetTextBuffers() const;
+    const GlyphBuffer *getGlyphBuffer() const;
+    const std::vector<std::unique_ptr<TextBuffer>> &GetTextBuffers() const;
 
-	private:
-		size_t _counter{};
-		size_t _textBufferSize{};
+private:
+    size_t _counter{};
+    size_t _textBufferSize{};
 
-		GlyphBufferSharedPtr _glyphBuffer{};
-		std::vector<std::unique_ptr<TextBuffer>> _textBuffers{};
+    GlyphBufferSharedPtr _glyphBuffer{};
+    std::vector<std::unique_ptr<TextBuffer>> _textBuffers{};
+};
 
-	};
-
-	RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(TextBatch)
-}
+RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(TextBatch)
+} // namespace rendell_text

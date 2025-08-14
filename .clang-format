@@ -1,0 +1,12 @@
+BasedOnStyle: LLVM
+
+Language: Cpp
+Standard: Latest
+IndentWidth: 4
+AccessModifierOffset: -4
+ConstructorInitializerIndentWidth: 4
+ColumnLimit: 100
+AllowShortFunctionsOnASingleLine: InlineOnly
+SpaceBeforeParens: ControlStatements
+BreakConstructorInitializers: BeforeComma
+SeparateDefinitionBlocks: Always
