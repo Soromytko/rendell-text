@@ -28,8 +28,7 @@ public:
 
 private:
     bool init();
-    void beginDrawing();
-    void endDrawing();
+    void setUniforms();
 
     TextLayoutSharedPtr _textLayout{};
     glm::mat4 _matrix{};

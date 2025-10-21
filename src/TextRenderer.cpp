@@ -1,59 +1,87 @@
+#include <rendell_text/TextRenderer.h>
+
 #include "RasteredFontStorageManager.h"
 #include "res_Shaders_TextRenderer_fs.h"
 #include "res_Shaders_TextRenderer_vs.h"
-#include <fstream>
-#include <glm/gtc/matrix_transform.hpp>
 #include <logging.h>
-#include <memory>
-#include <rendell_text/TextRenderer.h>
 #include <rendell_text/private/IFontRaster.h>
 
-#define TEXTURE_ARRAY_BLOCK 0
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-#define UNIFORM_BUFFER_BINDING 0
-#define TEXT_BUFFER_BINDING 1
-#define GLYPH_TRANSFORM_BUFFER_BINDING 2
+#include <fstream>
+#include <memory>
+
+#define TEXTURE_ARRAY_BLOCK 0
+#define TEXT_BUFFER_BINDING 0
+#define GLYPH_TRANSFORM_BUFFER_BINDING 1
 
 namespace rendell_text {
-static rendell::VertexArraySharedPtr s_vertexArray;
-static rendell::ShaderProgramSharedPtr s_shaderProgram;
+static rendell::oop::VertexAssemblySharedPtr s_vertexAssembly;
+static rendell::oop::ShaderProgramSharedPtr s_shaderProgram;
 static std::unique_ptr<RasteredFontStorageManager> s_rasteredFontStorageManager;
-static uint32_t s_matrixUniformIndex{};
-static uint32_t s_fontSizeUniformIndex{};
-static uint32_t s_colorUniformIndex{};
-static uint32_t s_backgroundColorUniformIndex{};
-static uint32_t s_charFromUniformIndex{};
-static uint32_t s_textureArrayUniformIndex{};
+static std::unique_ptr<rendell::oop::Mat4Uniform> s_matrixUniform{nullptr};
+static std::unique_ptr<rendell::oop::Float2Uniform> s_fontSizeUniform{nullptr};
+static std::unique_ptr<rendell::oop::Float4Uniform> s_textColorUniform{nullptr};
+static std::unique_ptr<rendell::oop::Float4Uniform> s_backgroundColorUniform{nullptr};
+static std::unique_ptr<rendell::oop::Int1Uniform> s_charFromUniformUniform{nullptr};
+static std::unique_ptr<rendell::oop::Sampler2DUniform> s_texturesUniform{nullptr};
 static uint32_t s_instanceCount{};
 static bool s_initialized = false;
 
-static rendell::VertexArraySharedPtr createVertexArray() {
+static rendell::oop::VertexAssemblySharedPtr createVertexAssembly() {
     static std::vector<float> vertexPos{
         0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
     };
+    static std::vector<uint32_t> indices{0, 0, 0, 0};
 
-    rendell::VertexBufferSharedPtr vertexBuffer = rendell::createVertexBuffer(vertexPos);
-    vertexBuffer->setLayouts({{rendell::ShaderDataType::float2, false, 0}});
-
-    rendell::VertexArraySharedPtr vertexArray = rendell::createVertexArray();
-    vertexArray->addVertexBuffer(vertexBuffer);
-
-    return vertexArray;
+    auto indexBuffer = rendell::oop::makeIndexBuffer(indices.data(), indices.size());
+    auto vertexBuffer = rendell::oop::makeVertexBuffer(vertexPos.data(), vertexPos.size());
+    auto vertexLayout =
+        rendell::VertexLayout().addAttribute(0, rendell::ShaderDataType::float2, false, 0);
+    auto vertexAssembly = rendell::oop::makeVertexAssembly(indexBuffer, std::vector{vertexBuffer},
+                                                           std::vector{vertexLayout});
+    return vertexAssembly;
 }
 
-static rendell::ShaderProgramSharedPtr createShaderProgram(std::string &&vertexSrc,
-                                                           std::string &&fragmentSrc) {
-    rendell::ShaderProgramSharedPtr program =
-        rendell::createShaderProgram(std::move(vertexSrc), std::move(fragmentSrc));
+static rendell::oop::ShaderProgramSharedPtr createShaderProgram(const std::string &vertexSrc,
+                                                                const std::string &fragmentSrc) {
+    auto vertexShader =
+        rendell::oop::makeVertexShader(vertexSrc, [](bool success, const std::string &infoLog) {
+            if (!infoLog.empty()) {
+                if (success) {
+                    RT_WARNING("Vertex shader compilation warning:\n{}", infoLog);
+                } else {
+                    RT_CRITICAL("Vertex shader compilation error:\n{}", infoLog);
+                }
+            }
+            assert(success);
+        });
 
-    if (std::string vertInfoLog, fragInfoLog; !program->compile(&vertInfoLog, &fragInfoLog)) {
-        RT_ERROR("Shader compilation failure:\n{}\n{}", vertInfoLog, fragInfoLog);
-        return nullptr;
-    }
-    if (std::string infoLog; !program->link(&infoLog)) {
-        RT_ERROR("Shader linking failure:\n{}", infoLog);
-        return nullptr;
-    }
+    auto fragmentShader =
+        rendell::oop::makeFragmentShader(fragmentSrc, [](bool success, const std::string &infoLog) {
+            if (!infoLog.empty()) {
+                if (success) {
+                    RT_WARNING("Fragment shader compilation warning:\n{}", infoLog);
+                } else {
+                    RT_CRITICAL("Fragment shader compilation error:\n{}", infoLog);
+                }
+            }
+            assert(success);
+        });
+
+    auto program = rendell::oop::makeShaderProgram(
+        vertexShader, fragmentShader, [](bool success, const std::string &infoLog) {
+            if (!infoLog.empty()) {
+                if (success) {
+                    RT_WARNING("Shader program linking warning:\n{}", infoLog);
+                } else {
+                    RT_CRITICAL("Shader program linking error:\n{}", infoLog);
+                }
+            }
+            assert(success);
+        });
+
     return program;
 }
 
@@ -67,7 +95,8 @@ static bool loadShaders(std::string &vertSrcResult, std::string &fragSrcResult) 
 static bool initStaticRendererStuff() {
     s_rasteredFontStorageManager.reset(new RasteredFontStorageManager);
 
-    s_vertexArray = createVertexArray();
+    s_vertexAssembly = createVertexAssembly();
+    assert(s_vertexAssembly);
 
     std::string vertexSrc, fragmentSrc;
     if (!loadShaders(vertexSrc, fragmentSrc)) {
@@ -75,32 +104,30 @@ static bool initStaticRendererStuff() {
         return false;
     }
 
-    s_shaderProgram = createShaderProgram(std::move(vertexSrc), std::move(fragmentSrc));
+    s_shaderProgram = createShaderProgram(vertexSrc, fragmentSrc);
+    assert(s_shaderProgram);
 
-    if (s_vertexArray != nullptr && s_shaderProgram != nullptr) {
-        s_shaderProgram->setShaderBufferBinding("textBuffer", TEXT_BUFFER_BINDING);
-        s_shaderProgram->setShaderBufferBinding("glyphTransformBuffer",
-                                                GLYPH_TRANSFORM_BUFFER_BINDING);
+    s_matrixUniform = std::make_unique<rendell::oop::Mat4Uniform>("u_Matrix");
+    s_fontSizeUniform = std::make_unique<rendell::oop::Float2Uniform>("u_FontSize");
+    s_textColorUniform = std::make_unique<rendell::oop::Float4Uniform>("u_TextColor");
+    s_backgroundColorUniform = std::make_unique<rendell::oop::Float4Uniform>("u_BackgroundColor");
+    s_charFromUniformUniform = std::make_unique<rendell::oop::Int1Uniform>("u_CharFrom");
+    s_texturesUniform = std::make_unique<rendell::oop::Sampler2DUniform>("u_Textures");
 
-        s_matrixUniformIndex = s_shaderProgram->getUniformIndex("u_Matrix");
-        s_fontSizeUniformIndex = s_shaderProgram->getUniformIndex("u_FontSize");
-        s_colorUniformIndex = s_shaderProgram->getUniformIndex("u_TextColor");
-        s_backgroundColorUniformIndex = s_shaderProgram->getUniformIndex("u_BackgroundColor");
-        s_charFromUniformIndex = s_shaderProgram->getUniformIndex("u_CharFrom");
-        s_textureArrayUniformIndex = s_shaderProgram->getUniformIndex("u_Textures");
-
-        s_shaderProgram->setUniformInt1(s_textureArrayUniformIndex, TEXTURE_ARRAY_BLOCK);
-
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 static void releaseStaticRendererStuff() {
     s_rasteredFontStorageManager.reset(nullptr);
-    s_vertexArray.reset();
+    s_vertexAssembly.reset();
     s_shaderProgram.reset();
+    s_matrixUniform.reset();
+    s_fontSizeUniform.reset();
+    s_textColorUniform.reset();
+    s_backgroundColorUniform.reset();
+    s_charFromUniformUniform.reset();
+    s_texturesUniform.reset();
+
     s_initialized = false;
 }
 
@@ -151,22 +178,21 @@ void TextRenderer::draw() {
 
     _textLayout->update();
 
-    beginDrawing();
-
     for (const TextBatchSharedPtr &textBatch : _textLayout->getTextBatchesForRendering()) {
         const GlyphBuffer *glyphBuffer = textBatch->getGlyphBuffer();
-        glyphBuffer->bind(TEXTURE_ARRAY_BLOCK);
-        s_shaderProgram->setUniformInt1(s_charFromUniformIndex, glyphBuffer->getRange().first);
         for (const std::unique_ptr<TextBuffer> &textBuffer : textBatch->GetTextBuffers()) {
-            textBuffer->bind(TEXT_BUFFER_BINDING, GLYPH_TRANSFORM_BUFFER_BINDING);
-            rendell::drawTriangleStripArraysInstanced(
-                0, 4, static_cast<uint32_t>(textBuffer->getCurrentLength()));
-            textBuffer->unbind();
+            s_shaderProgram->use();
+            s_vertexAssembly->use();
+            glyphBuffer->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
+            textBuffer->use(TEXT_BUFFER_BINDING, GLYPH_TRANSFORM_BUFFER_BINDING);
+            setUniforms();
+            s_charFromUniformUniform->set(glyphBuffer->getRange().first);
+            const uint32_t instanceCount = static_cast<uint32_t>(textBuffer->getCurrentLength());
+            rendell::setDrawType(rendell::DrawMode::ArraysInstanced,
+                                 rendell::PrimitiveTopology::TriangleStrip, instanceCount);
+            rendell::submit();
         }
-        glyphBuffer->unbind();
     }
-
-    endDrawing();
 }
 
 bool TextRenderer::init() {
@@ -181,23 +207,14 @@ bool TextRenderer::init() {
     return s_initialized;
 }
 
-void TextRenderer::beginDrawing() {
-    s_shaderProgram->bind();
-    s_vertexArray->bind();
-
+void TextRenderer::setUniforms() {
     const glm::ivec2 fontSize = _textLayout->getFontSize();
 
-    s_shaderProgram->setUniformMat4(s_matrixUniformIndex,
-                                    reinterpret_cast<const float *>(&_matrix));
-    s_shaderProgram->setUniformFloat2(s_fontSizeUniformIndex, static_cast<float>(fontSize.x),
-                                      static_cast<float>(fontSize.y));
-    s_shaderProgram->setUniformFloat4(s_colorUniformIndex, _color.r, _color.g, _color.b, _color.a);
-    s_shaderProgram->setUniformVec4(s_backgroundColorUniformIndex,
-                                    reinterpret_cast<const float *>(&_backgroundColor));
+    s_matrixUniform->set(glm::value_ptr(_matrix));
+    s_fontSizeUniform->set(static_cast<float>(fontSize.x), static_cast<float>(fontSize.y));
+    s_textColorUniform->set(_color.r, _color.g, _color.b, _color.a);
+    s_backgroundColorUniform->set(_backgroundColor.r, _backgroundColor.g, _backgroundColor.b,
+                                  _backgroundColor.a);
 }
 
-void TextRenderer::endDrawing() {
-    s_shaderProgram->unbind();
-    s_vertexArray->unbind();
-}
 } // namespace rendell_text

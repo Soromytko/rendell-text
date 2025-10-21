@@ -17,36 +17,6 @@ static std::unique_ptr<RasteredFontStorageManager> s_rasteredFontStorageManager;
 static uint32_t s_instanceCount{};
 static bool s_initialized = false;
 
-static rendell::VertexArraySharedPtr createVertexArray() {
-    static std::vector<float> vertexPos{
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-    };
-
-    rendell::VertexBufferSharedPtr vertexBuffer = rendell::createVertexBuffer(vertexPos);
-    vertexBuffer->setLayouts({{rendell::ShaderDataType::float2, false, 0}});
-
-    rendell::VertexArraySharedPtr vertexArray = rendell::createVertexArray();
-    vertexArray->addVertexBuffer(vertexBuffer);
-
-    return vertexArray;
-}
-
-static rendell::ShaderProgramSharedPtr createShaderProgram(std::string &&vertexSrc,
-                                                           std::string &&fragmentSrc) {
-    rendell::ShaderProgramSharedPtr program =
-        rendell::createShaderProgram(std::move(vertexSrc), std::move(fragmentSrc));
-
-    if (std::string vertInfoLog, fragInfoLog; !program->compile(&vertInfoLog, &fragInfoLog)) {
-        RT_ERROR("Shader compilation failure:\n{}\n{}", vertInfoLog, fragInfoLog);
-        return nullptr;
-    }
-    if (std::string infoLog; !program->link(&infoLog)) {
-        RT_ERROR("ERROR::TextLayout: Shader linking failure:\n{}", infoLog);
-        return nullptr;
-    }
-    return program;
-}
-
 static bool initStaticRendererStuff() {
     s_rasteredFontStorageManager.reset(new RasteredFontStorageManager);
     return true;

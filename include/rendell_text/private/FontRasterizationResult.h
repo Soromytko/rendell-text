@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <map>
+#include <rendell/oop/rendell_oop.h>
 #include <rendell/rendell.h>
 
 namespace rendell_text {
@@ -12,7 +13,7 @@ struct RasterizedChar {
 };
 
 struct FontRasterizationResult {
-    rendell::Texture2DArraySharedPtr texture2DArray{};
+    rendell::oop::Texture2DArraySharedPtr texture2DArray{};
     std::vector<RasterizedChar> rasterizedChars{};
 };
 

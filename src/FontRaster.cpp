@@ -80,7 +80,7 @@ bool FontRaster::rasterize(wchar_t from, wchar_t to, FontRasterizationResult &re
 
     const uint32_t charCount = static_cast<uint32_t>(to - from);
     auto texture2DArray =
-        rendell::createTexture2DArray(_width, _height, charCount, rendell::TextureFormat::R);
+        rendell::oop::makeTexture2DArray(_width, _height, charCount, rendell::TextureFormat::R);
     std::vector<RasterizedChar> rasterizedChars{};
     rasterizedChars.reserve(charCount);
 
@@ -93,10 +93,13 @@ bool FontRaster::rasterize(wchar_t from, wchar_t to, FontRasterizationResult &re
 
         const FT_BitmapGlyph bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
 
-        texture2DArray->setSubTextureData(static_cast<uint32_t>(currentChar - from),
-                                          static_cast<uint32_t>(bitmapGlyph->bitmap.width),
-                                          static_cast<uint32_t>(bitmapGlyph->bitmap.rows),
-                                          static_cast<const uint8_t *>(bitmapGlyph->bitmap.buffer));
+        if (bitmapGlyph->bitmap.width > 0 && bitmapGlyph->bitmap.rows > 0) {
+            texture2DArray->setSubData(
+                static_cast<uint32_t>(currentChar - from),
+                static_cast<uint32_t>(bitmapGlyph->bitmap.width),
+                static_cast<uint32_t>(bitmapGlyph->bitmap.rows),
+                reinterpret_cast<const rendell::byte_t *>(bitmapGlyph->bitmap.buffer));
+        }
 
         RasterizedChar rasterizedChar{
             currentChar, glm::ivec2(bitmapGlyph->bitmap.width, bitmapGlyph->bitmap.rows),

@@ -3,8 +3,8 @@
 namespace rendell_text {
 GlyphBuffer::GlyphBuffer(wchar_t from, wchar_t to,
                          FontRasterizationResult &&fontRasterizationResult) {
-#ifdef _DEBIG
-    assert(from > 0);
+#ifdef _DEBUG
+    assert(from >= 0);
     assert(from < to);
 #endif
     _range = {from, to};
@@ -13,12 +13,8 @@ GlyphBuffer::GlyphBuffer(wchar_t from, wchar_t to,
     _textures = _fontRasterizationResult.texture2DArray;
 }
 
-void GlyphBuffer::bind(uint32_t textureBlock) const {
-    _textures->bind(textureBlock);
-}
-
-void GlyphBuffer::unbind() const {
-    _textures->unbind();
+void GlyphBuffer::use(rendell::UniformSampler2DId uniformSampler2DId, uint32_t textureBlock) const {
+    _textures->use(uniformSampler2DId, textureBlock);
 }
 
 const RasterizedChar &GlyphBuffer::getRasterizedChar(wchar_t character) const {

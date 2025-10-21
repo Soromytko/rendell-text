@@ -2,6 +2,7 @@
 #include "FontRasterizationResult.h"
 #include <glm/glm.hpp>
 #include <memory>
+#include <rendell/oop/rendell_oop.h>
 #include <rendell/rendell.h>
 
 namespace rendell_text {
@@ -17,8 +18,7 @@ public:
     void updateBufferSubData(size_t from, size_t to);
 
     bool isFull() const;
-    void bind(uint32_t textBufferBinding, uint32_t transformBufferBinding) const;
-    void unbind() const;
+    void use(uint32_t textBufferBinding, uint32_t transformBufferBinding) const;
 
     size_t getLength() const;
     size_t getCurrentLength() const;
@@ -30,7 +30,7 @@ private:
     std::vector<uint32_t> _textBufferData{};
     std::vector<glm::vec4> _transformBufferData{};
 
-    rendell::ShaderBufferSharedPtr _textBuffer{};
-    rendell::ShaderBufferSharedPtr _transformBuffer{};
+    rendell::oop::ShaderBufferSharedPtr _textBuffer{};
+    rendell::oop::ShaderBufferSharedPtr _transformBuffer{};
 };
 } // namespace rendell_text

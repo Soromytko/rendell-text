@@ -8,8 +8,12 @@ TextBuffer::TextBuffer(size_t length)
     _textBufferData.resize(_length);
     _transformBufferData.resize(_length);
 
-    _textBuffer = rendell::createShaderBuffer(nullptr, _length * sizeof(uint32_t));
-    _transformBuffer = rendell::createShaderBuffer(nullptr, _length * sizeof(glm::mat4));
+    // TODO: Right now rendell requires that the data is not null.
+    const std::vector<rendell::byte_t> textEmptyData(_length * sizeof(uint32_t));
+    const std::vector<rendell::byte_t> transformEmptyData(_length * sizeof(glm::mat4));
+    _textBuffer = rendell::oop::makeShaderBuffer(textEmptyData.data(), _length * sizeof(uint32_t));
+    _transformBuffer =
+        rendell::oop::makeShaderBuffer(transformEmptyData.data(), _length * sizeof(glm::mat4));
 }
 
 void TextBuffer::beginUpdating() {
@@ -31,10 +35,14 @@ void TextBuffer::insertCharacter(const RasterizedChar &rasterizedChar, glm::vec2
 }
 
 void TextBuffer::endUpdating() {
-    _textBuffer->setSubData(static_cast<const void *>(_textBufferData.data()),
+    if (_counter == 0) {
+        return;
+    }
+    _textBuffer->setSubData(reinterpret_cast<const rendell::byte_t *>(_textBufferData.data()),
                             _counter * sizeof(uint32_t));
-    _transformBuffer->setSubData(static_cast<const void *>(_transformBufferData.data()),
-                                 _counter * sizeof(glm::vec4));
+    _transformBuffer->setSubData(
+        reinterpret_cast<const rendell::byte_t *>(_transformBufferData.data()),
+        _counter * sizeof(glm::vec4));
 }
 
 void TextBuffer::updateBufferSubData(size_t from, size_t to) {
@@ -44,24 +52,20 @@ void TextBuffer::updateBufferSubData(size_t from, size_t to) {
 #endif
     const size_t count = to - from;
 
-    _textBuffer->setSubData(static_cast<const void *>(_textBufferData.data()),
+    _textBuffer->setSubData(reinterpret_cast<const rendell::byte_t *>(_textBufferData.data()),
                             count * sizeof(uint32_t), from);
-    _transformBuffer->setSubData(static_cast<const void *>(_transformBufferData.data()),
-                                 count * sizeof(glm::mat4), from);
+    _transformBuffer->setSubData(
+        reinterpret_cast<const rendell::byte_t *>(_transformBufferData.data()),
+        count * sizeof(glm::mat4), from);
 }
 
 bool TextBuffer::isFull() const {
     return _counter >= _length;
 }
 
-void TextBuffer::bind(uint32_t textBufferBinding, uint32_t transformBufferBinding) const {
-    _textBuffer->bind(textBufferBinding);
-    _transformBuffer->bind(transformBufferBinding);
-}
-
-void TextBuffer::unbind() const {
-    _textBuffer->unbind();
-    _transformBuffer->unbind();
+void TextBuffer::use(uint32_t textBufferBinding, uint32_t transformBufferBinding) const {
+    _textBuffer->use(textBufferBinding);
+    _transformBuffer->use(transformBufferBinding);
 }
 
 size_t TextBuffer::getLength() const {

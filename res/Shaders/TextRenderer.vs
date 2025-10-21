@@ -1,4 +1,4 @@
-#version 430 core
+#version 450 core
 
 layout(location = 0) in vec2 a_VertexPosition;
 
@@ -6,8 +6,8 @@ uniform mat4 u_Matrix;
 uniform vec2 u_FontSize;
 uniform int u_CharFrom;
 
-buffer textBuffer { uint text[]; };
-buffer glyphTransformBuffer { vec4 glyphTransforms[]; };
+layout(std430, binding = 0) buffer textBuffer { uint text[]; };
+layout(std430, binding = 1) buffer glyphTransformBuffer { vec4 glyphTransforms[]; };
 
 out vec2 v_UV;
 flat out uint v_TextureIndex;
