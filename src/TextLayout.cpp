@@ -1,13 +1,20 @@
 #include "RasteredFontStorageManager.h"
-#include <fstream>
-#include <glm/gtc/matrix_transform.hpp>
-#include <logging.h>
-#include <memory>
+
 #include <rendell_text/TextLayout.h>
 #include <rendell_text/private/IFontRaster.h>
 
+#include <logging.h>
+
+#include <cassert>
+#include <fstream>
+#include <glm/gtc/matrix_transform.hpp>
+#include <memory>
+#include <utility>
+
 #define CHAR_RANGE_SIZE 200
 #define TEXT_BUFFER_SIZE 100
+
+static constexpr glm::ivec2 DEFAULT_FONT_SIZE = glm::ivec2(64, 64);
 
 const size_t CLEAR_BUFFER_CACHE_FLAG = 1 << 0;
 const size_t UPDATE_BUFFER_FLAG = 1 << 1;
@@ -27,9 +34,22 @@ static void releaseStaticRendererStuff() {
     s_initialized = false;
 }
 
-TextLayout::TextLayout() {
+TextLayout::TextLayout()
+    : _fontSize(DEFAULT_FONT_SIZE) {
     s_instanceCount++;
     init();
+}
+
+TextLayout::TextLayout(TextLayout &&other) noexcept {
+    _fontSize = std::exchange(other._fontSize, DEFAULT_FONT_SIZE);
+    _fontPath = std::exchange(other._fontPath, "");
+    _text = std::move(other._text);
+    _isUpdating = other._isUpdating;
+    _rasteredFontStorage = std::exchange(other._rasteredFontStorage, nullptr);
+    _cachedTextBatches = std::move(other._cachedTextBatches);
+    _textBatchesForRendering = std::move(other._textBatchesForRendering);
+    _textAdvance = std::move(other._textAdvance);
+    _updateActionFlags = other._updateActionFlags;
 }
 
 TextLayout::~TextLayout() {
@@ -56,11 +76,13 @@ std::wstring TextLayout::getSubText(size_t indexFrom) const {
     return std::wstring(_text.begin() + indexFrom, _text.end());
 }
 
-void TextLayout::update() {
-    updateBuffersIfNeeded();
+void TextLayout::beginUpdating() {
+    assert(!_isUpdating);
+    _isUpdating = true;
 }
 
 void TextLayout::setFontPath(const std::filesystem::path &fontPath) {
+    assert(_isUpdating);
     if (_fontPath != fontPath) {
         _fontPath = fontPath;
         _rasteredFontStorage = getRasteredFontStorage();
@@ -70,22 +92,35 @@ void TextLayout::setFontPath(const std::filesystem::path &fontPath) {
 }
 
 void TextLayout::setText(const std::wstring &value) {
+    assert(_isUpdating);
     std::wstring text = value;
     setText(std::move(text));
 }
 
 void TextLayout::setText(std::wstring &&value) {
+    assert(_isUpdating);
     _text = std::move(value);
     _updateActionFlags |= UPDATE_BUFFER_FLAG;
 }
 
 void TextLayout::setFontSize(const glm::ivec2 &fontSize) {
+    assert(_isUpdating);
     if (_fontSize != fontSize) {
         _fontSize = fontSize;
         _rasteredFontStorage = getRasteredFontStorage();
         _updateActionFlags |= CLEAR_BUFFER_CACHE_FLAG;
         _updateActionFlags |= UPDATE_BUFFER_FLAG;
     }
+}
+
+void TextLayout::endUpdating() {
+    assert(_isUpdating);
+    updateBuffersIfNeeded();
+    _isUpdating = false;
+}
+
+bool TextLayout::isEmpty() const {
+    return _text.size() == 0;
 }
 
 const std::filesystem::path &TextLayout::getFontPath() const {
@@ -122,7 +157,7 @@ uint32_t TextLayout::getDescender() const {
 }
 
 const std::vector<uint32_t> &TextLayout::getTextAdvance() const {
-    updateBuffersIfNeeded();
+    assert(!_isUpdating);
     return _textAdvance;
 }
 
@@ -167,7 +202,7 @@ static glm::vec2 getInstanceLocalOffset(const RasterizedChar &rasterizedChar) {
     return glm::vec2(bearing.x, bearing.y - size.y);
 }
 
-void TextLayout::updateShaderBuffers() const {
+void TextLayout::updateShaderBuffers() {
     _textBatchesForRendering.clear();
     _textAdvance.resize(_text.length());
     auto it = _textAdvance.begin();
@@ -212,7 +247,7 @@ void TextLayout::updateShaderBuffers() const {
     }
 }
 
-void TextLayout::updateBuffersIfNeeded() const {
+void TextLayout::updateBuffersIfNeeded() {
     if (_updateActionFlags & CLEAR_BUFFER_CACHE_FLAG) {
         _rasteredFontStorage = getRasteredFontStorage();
         _cachedTextBatches.clear();
@@ -237,7 +272,7 @@ RasteredFontStorageSharedPtr TextLayout::getRasteredFontStorage() const {
     return result;
 }
 
-TextBatchSharedPtr TextLayout::createTextBatch(wchar_t character) const {
+TextBatchSharedPtr TextLayout::createTextBatch(wchar_t character) {
     const wchar_t rangeIndex = _rasteredFontStorage->getRangeIndex(character);
     if (auto it = _cachedTextBatches.find(rangeIndex); it != _cachedTextBatches.end()) {
         return it->second;
@@ -247,9 +282,8 @@ TextBatchSharedPtr TextLayout::createTextBatch(wchar_t character) const {
     if (!glyphBuffer) {
         return nullptr;
     }
-    const TextBatchSharedPtr result = makeTextBatch(glyphBuffer, TEXT_BUFFER_SIZE);
-    ;
-    _cachedTextBatches[rangeIndex] = result;
+    TextBatchSharedPtr result = makeTextBatch(glyphBuffer, TEXT_BUFFER_SIZE);
+    _cachedTextBatches[static_cast<uint32_t>(rangeIndex)] = result;
     return result;
 }
 } // namespace rendell_text

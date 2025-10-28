@@ -2,7 +2,6 @@
 #include "TextLayout.h"
 #include "private/RasteredFontStorage.h"
 #include "private/TextBatch.h"
-#include <rendell/oop/raii.h>
 
 #include <glm/glm.hpp>
 #include <map>
@@ -16,26 +15,22 @@ public:
     ~TextRenderer();
 
     bool isInitialized() const;
-    const TextLayoutSharedPtr &getTextLayout() const;
 
-    void setTextLayout(const TextLayoutSharedPtr &textLayout);
+    void setText(std::wstring &&text);
     void setMatrix(const glm::mat4 &matrix);
     void setColor(const glm::vec4 &color);
     void setBackgroundColor(const glm::vec4 backgroundColor);
 
     const glm::vec4 &getColor() const;
 
-    void draw();
+    void draw(TextLayout &textLayout);
 
 private:
     bool init();
-    void setUniforms();
+    void setUniforms(glm::ivec2 fontSize);
 
-    TextLayoutSharedPtr _textLayout{};
     glm::mat4 _matrix{};
     glm::vec4 _color{};
     glm::vec4 _backgroundColor{};
 };
-
-RENDELL_USE_RAII_FACTORY(TextRenderer)
 } // namespace rendell_text

@@ -147,14 +147,6 @@ bool TextRenderer::isInitialized() const {
     return s_initialized;
 }
 
-const TextLayoutSharedPtr &TextRenderer::getTextLayout() const {
-    return _textLayout;
-}
-
-void TextRenderer::setTextLayout(const TextLayoutSharedPtr &textLayout) {
-    _textLayout = textLayout;
-}
-
 void TextRenderer::setMatrix(const glm::mat4 &matrix) {
     _matrix = matrix;
 }
@@ -171,21 +163,19 @@ const glm::vec4 &TextRenderer::getColor() const {
     return _color;
 }
 
-void TextRenderer::draw() {
-    if (!_textLayout || _textLayout->getText().length() == 0) {
+void TextRenderer::draw(TextLayout &textLayout) {
+    if (textLayout.isEmpty()) {
         return;
     }
 
-    _textLayout->update();
-
-    for (const TextBatchSharedPtr &textBatch : _textLayout->getTextBatchesForRendering()) {
+    for (const TextBatchSharedPtr &textBatch : textLayout.getTextBatchesForRendering()) {
         const GlyphBuffer *glyphBuffer = textBatch->getGlyphBuffer();
         for (const std::unique_ptr<TextBuffer> &textBuffer : textBatch->getTextBuffers()) {
             s_shaderProgram->use();
             s_vertexAssembly->use();
             glyphBuffer->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
             textBuffer->use(TEXT_BUFFER_BINDING, GLYPH_TRANSFORM_BUFFER_BINDING);
-            setUniforms();
+            setUniforms(textLayout.getFontSize());
             s_charFromUniformUniform->set(glyphBuffer->getRange().first);
             const uint32_t instanceCount = static_cast<uint32_t>(textBuffer->getCurrentLength());
             rendell::setDrawType(rendell::DrawMode::ArraysInstanced,
@@ -207,9 +197,7 @@ bool TextRenderer::init() {
     return s_initialized;
 }
 
-void TextRenderer::setUniforms() {
-    const glm::ivec2 fontSize = _textLayout->getFontSize();
-
+void TextRenderer::setUniforms(glm::ivec2 fontSize) {
     s_matrixUniform->set(glm::value_ptr(_matrix));
     s_fontSizeUniform->set(static_cast<float>(fontSize.x), static_cast<float>(fontSize.y));
     s_textColorUniform->set(_color.r, _color.g, _color.b, _color.a);
