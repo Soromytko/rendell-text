@@ -1,6 +1,9 @@
 #pragma once
 #include "GlyphBuffer.h"
 #include "TextBuffer.h"
+
+#include <rendell/oop/raii.h>
+
 #include <glm/glm.hpp>
 #include <memory>
 
@@ -15,15 +18,15 @@ public:
     void endUpdating();
 
     const GlyphBuffer *getGlyphBuffer() const;
-    const std::vector<std::unique_ptr<TextBuffer>> &GetTextBuffers() const;
+    const std::vector<TextBufferUniquePtr> &getTextBuffers() const;
 
 private:
     size_t _counter{};
     size_t _textBufferSize{};
 
     GlyphBufferSharedPtr _glyphBuffer{};
-    std::vector<std::unique_ptr<TextBuffer>> _textBuffers{};
+    std::vector<TextBufferUniquePtr> _textBuffers{};
 };
 
-RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(TextBatch)
+RENDELL_USE_RAII_FACTORY(TextBatch)
 } // namespace rendell_text

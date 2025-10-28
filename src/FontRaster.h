@@ -1,7 +1,7 @@
 #pragma once
 #include "freetype.h"
 #include <logging.h>
-#include <rendell_text/defines.h>
+#include <rendell/oop/raii.h>
 #include <rendell_text/private/IFontRaster.h>
 
 namespace rendell_text {
@@ -33,5 +33,5 @@ private:
     uint32_t _height{24};
 };
 
-RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(FontRaster)
+RENDELL_USE_RAII_FACTORY(FontRaster)
 } // namespace rendell_text

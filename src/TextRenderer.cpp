@@ -180,7 +180,7 @@ void TextRenderer::draw() {
 
     for (const TextBatchSharedPtr &textBatch : _textLayout->getTextBatchesForRendering()) {
         const GlyphBuffer *glyphBuffer = textBatch->getGlyphBuffer();
-        for (const std::unique_ptr<TextBuffer> &textBuffer : textBatch->GetTextBuffers()) {
+        for (const std::unique_ptr<TextBuffer> &textBuffer : textBatch->getTextBuffers()) {
             s_shaderProgram->use();
             s_vertexAssembly->use();
             glyphBuffer->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);

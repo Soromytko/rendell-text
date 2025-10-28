@@ -1,8 +1,9 @@
 #pragma once
 #include "TextLayout.h"
-#include "defines.h"
 #include "private/RasteredFontStorage.h"
 #include "private/TextBatch.h"
+#include <rendell/oop/raii.h>
+
 #include <glm/glm.hpp>
 #include <map>
 #include <rendell/rendell.h>
@@ -36,5 +37,5 @@ private:
     glm::vec4 _backgroundColor{};
 };
 
-RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(TextRenderer)
+RENDELL_USE_RAII_FACTORY(TextRenderer)
 } // namespace rendell_text

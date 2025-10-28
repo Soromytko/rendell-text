@@ -1,9 +1,12 @@
 #pragma once
 #include "FontRasterizationResult.h"
-#include <glm/glm.hpp>
-#include <memory>
+
 #include <rendell/oop/rendell_oop.h>
 #include <rendell/rendell.h>
+
+#include <glm/glm.hpp>
+#include <memory>
+#include <vector>
 
 namespace rendell_text {
 class TextBuffer {
@@ -33,4 +36,6 @@ private:
     rendell::oop::ShaderBufferSharedPtr _textBuffer{};
     rendell::oop::ShaderBufferSharedPtr _transformBuffer{};
 };
+
+RENDELL_USE_RAII_FACTORY(TextBuffer)
 } // namespace rendell_text

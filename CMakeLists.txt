@@ -21,7 +21,6 @@ set(SOURCES
 
 set(HEADERS
     include/rendell_text/rendell_text.h
-    include/rendell_text/defines.h
     include/rendell_text/TextLayout.h
     include/rendell_text/TextRenderer.h
     include/rendell_text/private/TextBatch.h

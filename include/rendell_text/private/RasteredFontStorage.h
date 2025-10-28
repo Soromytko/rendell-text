@@ -1,9 +1,9 @@
 #pragma once
-#include <map>
-#include <memory>
-#include <rendell_text/defines.h>
 #include <rendell_text/private/GlyphBuffer.h>
 #include <rendell_text/private/IFontRaster.h>
+
+#include <map>
+#include <memory>
 #include <string>
 
 namespace rendell_text {
@@ -29,5 +29,5 @@ private:
     std::map<wchar_t, std::shared_ptr<GlyphBuffer>> _cachedGlyphBuffers{};
 };
 
-RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(RasteredFontStorage)
+RENDELL_USE_RAII_FACTORY(RasteredFontStorage)
 } // namespace rendell_text

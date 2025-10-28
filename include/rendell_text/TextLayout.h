@@ -1,7 +1,7 @@
 #pragma once
-#include "defines.h"
 #include "private/RasteredFontStorage.h"
 #include "private/TextBatch.h"
+
 #include <glm/glm.hpp>
 #include <map>
 #include <rendell/rendell.h>
@@ -59,5 +59,5 @@ private:
     mutable size_t _updateActionFlags{};
 };
 
-RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(TextLayout)
+RENDELL_USE_RAII_FACTORY(TextLayout)
 } // namespace rendell_text

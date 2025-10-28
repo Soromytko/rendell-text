@@ -1,9 +1,10 @@
 #pragma once
-#include <memory>
+#include <rendell/oop/raii.h>
 #include <rendell/oop/rendell_oop.h>
 #include <rendell/rendell.h>
-#include <rendell_text/defines.h>
 #include <rendell_text/private/IFontRaster.h>
+
+#include <memory>
 
 namespace rendell_text {
 class GlyphBuffer {
@@ -23,5 +24,5 @@ private:
     rendell::oop::Texture2DArraySharedPtr _textures{};
 };
 
-RENDELL_TEXT_DECLARE_SHARED_PTR_FACTORY(GlyphBuffer)
+RENDELL_USE_RAII_FACTORY(GlyphBuffer)
 } // namespace rendell_text

@@ -1,8 +1,10 @@
 #pragma once
 #include "FontRasterizationResult.h"
+
+#include <rendell/oop/raii.h>
+
 #include <filesystem>
 #include <memory>
-#include <rendell_text/defines.h>
 
 namespace rendell_text {
 class IFontRaster {
@@ -25,5 +27,5 @@ public:
     virtual bool rasterize(wchar_t from, wchar_t to, FontRasterizationResult &result) = 0;
 };
 
-RENDELL_TEXT_DECLARE_SHARED_PTR(IFontRaster)
+RENDELL_USE_RAII(IFontRaster)
 } // namespace rendell_text

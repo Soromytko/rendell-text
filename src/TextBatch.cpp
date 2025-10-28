@@ -40,7 +40,7 @@ const GlyphBuffer *TextBatch::getGlyphBuffer() const {
     return _glyphBuffer.get();
 }
 
-const std::vector<std::unique_ptr<TextBuffer>> &TextBatch::GetTextBuffers() const {
+const std::vector<TextBufferUniquePtr> &TextBatch::getTextBuffers() const {
     return _textBuffers;
 }
 } // namespace rendell_text
