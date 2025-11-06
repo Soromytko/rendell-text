@@ -1,6 +1,4 @@
 #pragma once
-#include <format>
-#include <iostream>
 #include <logr/logr.h>
 
 namespace rendell_text {

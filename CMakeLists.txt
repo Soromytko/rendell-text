@@ -4,34 +4,57 @@ project(RendellText)
 
 set(CMAKE_CXX_STANDARD 23)
 
-set(RENDELL_TEXT_RENDELL_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../rendell)
-
 set(SOURCES
-    src/TextLayout.cpp
-    src/TextRenderer.cpp
-    src/TextBatch.cpp
-    src/TextBuffer.cpp
-    src/GlyphBuffer.cpp
-    src/RasteredFontStorage.cpp
-    src/RasteredFontStorageManager.cpp
-    src/FontRaster.cpp
+    src/initialization.cpp
+    src/font.cpp
     src/logging.cpp
+    src/factory.cpp
+
+    src/GlyphRaster.cpp
+
+    src/HarfBuzzShaper.cpp
+    src/FontFallbackResolver.cpp
+    src/FontLibrary.cpp
+    
+    src/SkylineGlyphAtlas.cpp
+    src/GlyphMultiAtlas.cpp
 )
 
 set(HEADERS
-    include/rendell_text/rendell_text.h
-    include/rendell_text/TextLayout.h
-    include/rendell_text/TextRenderer.h
-    include/rendell_text/private/TextBatch.h
-    include/rendell_text/private/TextBuffer.h
-    include/rendell_text/private/GlyphBuffer.h
-    include/rendell_text/private/IFontRaster.h
-    include/rendell_text/private/FontRasterizationResult.h
-    include/rendell_text/private/RasteredFontStorage.h
+    include/rendell_text/types.h
+    include/rendell_text/font.h
+    include/rendell_text/initialization.h
+    include/rendell_text/factory.h
+    include/rendell_text/ShaperConfig.h
+    include/rendell_text/Glyph.h
+    include/rendell_text/TextRun.h
+    include/rendell_text/IFontMetricsProvider.h
+    include/rendell_text/IGlyphShaper.h
+    include/rendell_text/ITextBuffer.h
+    include/rendell_text/IGlyphAtlasTexture.h
+    include/rendell_text/IGlyphAtlas.h
+    include/rendell_text/IGlyphMultiAtlas.h
+    include/rendell_text/IFontFallbackResolver.h
+    include/rendell_text/IGlyphRaster.h
+    include/rendell_text/ShapedGlyph.h
+    include/rendell_text/RasterizedGlyph.h
+
     internal/logging.h
-    src/RasteredFontStorageManager.h
-    src/FontRaster.h
-    src/freetype.h
+    internal/SkylineGlyphAtlas.h
+    internal/GlyphMultiAtlas.h
+    internal/HarfBuzzShaper.h
+    internal/FontFallbackResolver.h
+    internal/GlyphRaster.h
+
+    internal/GlyphKey.h
+
+    internal/FontLibrary.h
+    internal/IFontData.h
+    internal/HB_Resource.h
+    internal/MSDF_Resource.h
+    internal/SharedFontData.h
+
+    internal/freetype.h
 )
 
 set(SHADERS
@@ -62,12 +85,30 @@ add_library(rendell_text STATIC ${SOURCES} ${HEADERS})
 target_include_directories(rendell_text PUBLIC include)
 target_include_directories(rendell_text PRIVATE internal)
 
-# FreeType
-add_subdirectory(freetype)
-target_link_libraries(rendell_text PRIVATE freetype)
-
 # logr
 if(NOT TARGET logr)
     add_subdirectory(logr)
 endif()
-target_link_libraries(rendell PRIVATE logr)
+target_link_libraries(rendell_text PRIVATE logr)
+
+# FreeType
+add_subdirectory(freetype)
+add_library(Freetype::Freetype ALIAS freetype)
+target_link_libraries(rendell_text PRIVATE freetype)
+
+# tinyxml2
+add_subdirectory(tinyxml2)
+add_library(tinyxml2::tinyxml2 ALIAS tinyxml2)
+
+# msdfgen
+set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_CORE_ONLY OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
+add_subdirectory(msdfgen)
+target_link_libraries(rendell_text PRIVATE msdfgen-core msdfgen-ext)
+
+# HarfBuzz
+add_subdirectory(harfbuzz)
+target_link_libraries(rendell_text PRIVATE harfbuzz)

@@ -1,37 +1,48 @@
 #pragma once
+#include <rendell_text/GlyphBitmap.h>
+#include <rendell_text/IFontRaster.h>
+
 #include "freetype.h"
-#include <logging.h>
-#include <rendell/oop/raii.h>
-#include <rendell_text/private/IFontRaster.h>
+
+namespace msdfgen {
+class FreetypeHandle;
+class FontHandle;
+} // namespace msdfgen
 
 namespace rendell_text {
-class FontRaster : public IFontRaster {
+class FontRaster final : public IFontRaster {
 public:
-    FontRaster() = default;
-    FontRaster(const std::filesystem::path &fontPath, uint32_t width, uint32_t height);
+    FontRaster();
     ~FontRaster();
 
-    bool isInitialized() const override;
     const std::filesystem::path &getFontPath() const override;
-    int getFontHeight() const override;
+    uint32_t getFontWiidth() const override;
+    uint32_t getGlyphHeight() const override;
+    uint32_t getLineHeight() const override;
     int getAscender() const override;
     int getDescender() const override;
 
-    bool loadFont(const std::filesystem::path &fontPath, uint32_t width, uint32_t height) override;
+    bool setFontData(const std::byte *data, size_t size) override;
+    void setFontSize(uint32_t width, uint32_t height) override;
+    bool rasterizeGlyph(Codepoint character, AtlasType atlasType, GlyphBitmap &result) override;
 
-    bool rasterize(wchar_t from, wchar_t to, FontRasterizationResult &result) override;
+    bool rasterizeGlyphBitmap(Codepoint character, GlyphBitmap &result);
+    bool rasterizeGlyphSDF(Codepoint character, GlyphBitmap &result);
+    bool rasterizeGlyphMSDF(Codepoint character, GlyphBitmap &result);
+    bool rasterizeGlyphMTSDF(Codepoint character, GlyphBitmap &result);
 
 private:
-    bool init();
-    void releaseFace();
-    bool rasterizeChar(wchar_t character, FT_Glyph &result);
+    bool rasterizeChar(Codepoint character, FT_Glyph &result);
     FT_Glyph rasterizeGlyphStub();
 
+    FT_Library _freetype{nullptr};
     FT_Face _face{nullptr};
-    std::filesystem::path _fontPath{};
-    uint32_t _width{24};
-    uint32_t _height{24};
-};
 
-RENDELL_USE_RAII_FACTORY(FontRaster)
+    msdfgen::FreetypeHandle *_freetypeHandle{nullptr};
+    msdfgen::FontHandle *_fontHandle{nullptr};
+
+    std::filesystem::path _fontPath{};
+    uint32_t _fontWidth{24};
+    uint32_t _fontHeight{24};
+};
 } // namespace rendell_text

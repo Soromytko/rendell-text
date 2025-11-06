@@ -3,17 +3,17 @@
 
 namespace rendell_text {
 RTLogger::RTLogger()
-    : logx::Logger() {
+    : logr::Logger() {
 }
 
-const char *RTLogger::getLevelName_Unsafe(logx::Level level) const {
-    static const std::unordered_map<logx::Level, const char *> levelNames{
-        {logx::Level::critical, "RENDELL_TEXT::CRITICAL"},
-        {logx::Level::error, "RENDELL_TEXT::ERROR"},
-        {logx::Level::warning, "RENDELL_TEXT::WARNING"},
-        {logx::Level::info, "RENDELL_TEXT::INFO"},
-        {logx::Level::debug, "RENDELL_TEXT::DEBUG"},
-        {logx::Level::trace, "RENDELL_TEXT::TRACE"},
+const char *RTLogger::getLevelName_Unsafe(logr::Level level) const {
+    static const std::unordered_map<logr::Level, const char *> levelNames{
+        {logr::Level::critical, "RENDELL_TEXT::CRITICAL"},
+        {logr::Level::error, "RENDELL_TEXT::ERROR"},
+        {logr::Level::warning, "RENDELL_TEXT::WARNING"},
+        {logr::Level::info, "RENDELL_TEXT::INFO"},
+        {logr::Level::debug, "RENDELL_TEXT::DEBUG"},
+        {logr::Level::trace, "RENDELL_TEXT::TRACE"},
     };
 
     auto it = levelNames.find(level);
@@ -24,11 +24,11 @@ const char *RTLogger::getLevelName_Unsafe(logx::Level level) const {
     return nullptr;
 }
 
-static std::unique_ptr<logx::Logger> s_logger{nullptr};
+static std::unique_ptr<logr::Logger> s_logger{nullptr};
 
-logx::Logger *get_logger() {
+logr::Logger *get_logger() {
     if (!s_logger) {
-        s_logger = std::make_unique<logx::Logger>();
+        s_logger = std::make_unique<logr::Logger>();
     }
     return s_logger.get();
 }

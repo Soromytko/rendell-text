@@ -1,44 +1,55 @@
 #include "FontRaster.h"
 
+#include <logging.h>
+
+#include <msdfgen-ext.h>
+#include <msdfgen.h>
+
+#include <cassert>
+
 namespace rendell_text {
-static uint32_t s_instanceCount = 0;
-static bool s_freeTypeInitialized = false;
-static FT_Library s_freetype;
-
-FontRaster::FontRaster(const std::filesystem::path &fontPath, uint32_t width, uint32_t height) {
-    s_instanceCount++;
-
-    if (!init()) {
-        RT_ERROR("Initialization failure");
+FontRaster::FontRaster() {
+    FT_Error error = FT_Init_FreeType(&_freetype);
+    if (error) {
+        RT_CRITICAL("FreeType initialization failure!");
         return;
     }
 
-    if (!fontPath.empty()) {
-        loadFont(fontPath, width, height);
+    _freetypeHandle = msdfgen::initializeFreetype();
+    if (!_freetypeHandle) {
+        RT_CRITICAL("FreeType initialization failure using msdfgen!");
+        return;
     }
 }
 
 FontRaster::~FontRaster() {
-    releaseFace();
-
-    s_instanceCount--;
-    if (s_instanceCount == 0 && s_freeTypeInitialized) {
-        FT_Done_FreeType(s_freetype);
-        s_freeTypeInitialized = false;
+    if (_freetypeHandle) {
+        msdfgen::deinitializeFreetype(_freetypeHandle);
+        _freetypeHandle = nullptr;
     }
-}
 
-bool FontRaster::isInitialized() const {
-    return s_freeTypeInitialized && _face;
+    if (_fontHandle) {
+        msdfgen::destroyFont(_fontHandle);
+        _fontHandle = nullptr;
+    }
 }
 
 const std::filesystem::path &FontRaster::getFontPath() const {
     return _fontPath;
 }
 
-int FontRaster::getFontHeight() const {
+uint32_t FontRaster::getFontWiidth() const {
+    return _fontWidth;
+}
+
+uint32_t FontRaster::getGlyphHeight() const {
+    return _fontHeight;
+}
+
+uint32_t FontRaster::getLineHeight() const {
+    assert(_face);
     const FT_Pos lineHeight = _face->size->metrics.height >> 6;
-    return lineHeight;
+    return static_cast<uint32_t>(lineHeight);
 }
 
 int FontRaster::getAscender() const {
@@ -51,94 +62,165 @@ int FontRaster::getDescender() const {
     return descender;
 }
 
-bool FontRaster::loadFont(const std::filesystem::path &fontPath, uint32_t width, uint32_t height) {
-    releaseFace();
+bool FontRaster::setFontData(const std::byte *data, size_t size) {
+    assert(data);
+    assert(size > 0);
 
-    _fontPath = fontPath;
-    _width = width;
-    _height = height;
-    const std::string &path = _fontPath.string();
-    if (path.empty() || FT_New_Face(s_freetype, path.c_str(), 0, &_face)) {
-        RT_ERROR("Failed to create font face {}", fontPath.string());
+    _fontHandle = msdfgen::loadFontData(
+        _freetypeHandle, reinterpret_cast<const msdfgen::byte *>(data), static_cast<int>(size));
+    if (!_fontHandle) {
+        RT_ERROR("Failed to load msdfgen font!");
         return false;
     }
-    FT_Set_Pixel_Sizes(_face, _width, _height);
+
+    FT_Error error = FT_New_Memory_Face(_freetype, reinterpret_cast<const FT_Byte *>(data),
+                                        static_cast<FT_Long>(size), 0, &_face);
+    if (error) {
+        RT_ERROR("Failed to load font!");
+        return false;
+    }
+    return true;
+}
+
+void FontRaster::setFontSize(uint32_t width, uint32_t height) {
+    assert(_face);
+    if (_fontWidth == width && _fontHeight == height) {
+        return;
+    }
+    _fontWidth = width;
+    _fontHeight = height;
+    FT_Set_Pixel_Sizes(_face, _fontWidth, _fontHeight);
+}
+
+bool FontRaster::rasterizeGlyph(Codepoint character, AtlasType atlasType, GlyphBitmap &result) {
+    switch (atlasType) {
+    case AtlasType::bitmap:
+        return rasterizeGlyphBitmap(character, result);
+    case AtlasType::sdf:
+        return rasterizeGlyphSDF(character, result);
+    case AtlasType::msdf:
+        return rasterizeGlyphMSDF(character, result);
+    case AtlasType::mtsdf:
+        return rasterizeGlyphMTSDF(character, result);
+    }
+
+    return false;
+}
+
+static std::vector<std::byte> convertBitmapToVector(FT_BitmapGlyph bitmap) {
+    if (bitmap->bitmap.width == 0 || bitmap->bitmap.rows == 0 || !bitmap->bitmap.buffer) {
+        return {};
+    }
+
+    const size_t width = static_cast<size_t>(bitmap->bitmap.width);
+    const size_t rows = static_cast<size_t>(bitmap->bitmap.rows);
+    const std::byte *data = reinterpret_cast<const std::byte *>(bitmap->bitmap.buffer);
+    const int pitch = bitmap->bitmap.pitch;
+
+    std::vector<std::byte> pixels;
+    pixels.resize(width * rows);
+    if (pitch >= 0) {
+        for (size_t rowIndex = 0; rowIndex < rows; rowIndex++) {
+            std::byte *out = pixels.data() + rowIndex * width;
+            const std::byte *src = data + rowIndex * static_cast<size_t>(pitch);
+            std::memcpy(out, src, width);
+        }
+    } else {
+        for (size_t rowIndex = 0; rowIndex < rows; rowIndex++) {
+            std::byte *out = pixels.data() + rowIndex * width;
+            const std::byte *src = data + (rows - 1 - rowIndex) * (-pitch);
+            std::memcpy(out, src, width);
+        }
+    }
+    return pixels;
+}
+
+bool FontRaster::rasterizeGlyphBitmap(Codepoint character, GlyphBitmap &result) {
+    assert(_face);
+
+    if (FT_Load_Char(_face, static_cast<FT_ULong>(character), FT_LOAD_RENDER)) {
+        RT_ERROR("Failed to load Glyph {}", static_cast<char>(character));
+        return false;
+    }
+
+    FT_Glyph glyph;
+    if (FT_Get_Glyph(_face->glyph, &glyph)) {
+        RT_ERROR("Failed to get Glyph {}", static_cast<char>(character));
+        return false;
+    }
+
+    const FT_BitmapGlyph ftBitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
+
+    result.character = character;
+    result.width = static_cast<uint32_t>(ftBitmapGlyph->bitmap.width);
+    result.height = static_cast<uint32_t>(ftBitmapGlyph->bitmap.rows);
+    result.glyphBearing = glm::ivec2(ftBitmapGlyph->left, ftBitmapGlyph->top);
+    result.glyphAdvance = static_cast<uint32_t>(_face->glyph->advance.x >> 6);
+    result.atlasType = AtlasType::bitmap;
+    result.pixels = convertBitmapToVector(ftBitmapGlyph);
+
+    FT_Done_Glyph(glyph);
 
     return true;
 }
 
-bool FontRaster::rasterize(wchar_t from, wchar_t to, FontRasterizationResult &result) {
-#ifdef _DEBUG
-    assert(s_freeTypeInitialized);
-    assert(from < to);
-#endif
+bool FontRaster::rasterizeGlyphSDF(Codepoint character, GlyphBitmap &result) {
+    assert(false);
+    return false;
+}
 
-    if (!_face) {
-        RT_ERROR("Font face is missing");
+bool FontRaster::rasterizeGlyphMSDF(Codepoint character, GlyphBitmap &result) {
+    assert(_freetype);
+    assert(_freetypeHandle);
+
+    msdfgen::Shape shape;
+    if (!msdfgen::loadGlyph(shape, _fontHandle, static_cast<msdfgen::unicode_t>(character))) {
+        RT_ERROR(L"Failed to load Glyph using msdfgen: {}", static_cast<wchar_t>(character));
         return false;
     }
+    shape.normalize();
+    msdfgen::edgeColoringSimple(shape, 3.0);
 
-    const uint32_t charCount = static_cast<uint32_t>(to - from);
-    auto texture2DArray =
-        rendell::oop::makeTexture2DArray(_width, _height, charCount, rendell::TextureFormat::R);
-    std::vector<RasterizedChar> rasterizedChars{};
-    rasterizedChars.reserve(charCount);
+    const auto glyphWidth = _fontWidth;
+    const auto glyphHeight = _fontHeight;
 
-    for (wchar_t currentChar = from; currentChar < to; currentChar++) {
-        FT_Glyph glyph;
-        if (!rasterizeChar(currentChar, glyph)) {
-            RT_ERROR("Failed to rasterize Glyph {}", static_cast<char>(currentChar));
-            glyph = rasterizeGlyphStub();
-        }
+    double xMin, xMax, yMin, yMax;
+    shape.bound(xMin, yMin, xMax, yMax);
+    const msdfgen::Vector2 scale(glyphWidth / (xMax - xMin), glyphHeight / (yMax - yMin));
+    const msdfgen::Vector2 translate = -msdfgen::Vector2(xMin, yMin);
+    const msdfgen::Projection projection(scale, translate);
+    const msdfgen::Range range(4.0f);
+    const msdfgen::SDFTransformation transform(projection, range);
 
-        const FT_BitmapGlyph bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
+    msdfgen::Bitmap<float, 3> msdf(static_cast<int>(glyphWidth), static_cast<int>(glyphHeight));
+    msdfgen::generateMSDF(msdf, shape, transform);
 
-        if (bitmapGlyph->bitmap.width > 0 && bitmapGlyph->bitmap.rows > 0) {
-            texture2DArray->setSubData(
-                static_cast<uint32_t>(currentChar - from),
-                static_cast<uint32_t>(bitmapGlyph->bitmap.width),
-                static_cast<uint32_t>(bitmapGlyph->bitmap.rows),
-                reinterpret_cast<const rendell::byte_t *>(bitmapGlyph->bitmap.buffer));
-        }
-
-        RasterizedChar rasterizedChar{
-            currentChar, glm::ivec2(bitmapGlyph->bitmap.width, bitmapGlyph->bitmap.rows),
-            glm::ivec2(bitmapGlyph->left, bitmapGlyph->top),
-            static_cast<uint32_t>(_face->glyph->advance.x)};
-        rasterizedChars.push_back(std::move(rasterizedChar));
-
-        FT_Done_Glyph(glyph);
+    if (FT_Error error = FT_Load_Char(_face, static_cast<FT_ULong>(character), FT_LOAD_DEFAULT)) {
+        RT_ERROR(L"Failed to load Glyph: {}", static_cast<wchar_t>(character));
+        return false;
     }
+    FT_GlyphSlot slot = _face->glyph;
 
-    result = {texture2DArray, std::move(rasterizedChars)};
+    result.character = character;
+    result.width = static_cast<uint32_t>(slot->metrics.width >> 6);
+    result.height = static_cast<uint32_t>(slot->metrics.height >> 6);
+    result.glyphBearing = glm::ivec2(static_cast<int>(slot->metrics.horiBearingX >> 6),
+                                     static_cast<int>(slot->metrics.horiBearingY >> 6));
+    result.glyphAdvance = static_cast<uint32_t>(slot->metrics.horiAdvance >> 6);
+    result.atlasType = AtlasType::msdf;
+    result.pixels.resize(glyphWidth * glyphHeight * 3 * sizeof(float));
+    std::memcpy(result.pixels.data(), msdf(0, 0), sizeof(float) * glyphWidth * glyphHeight * 3);
+
     return true;
 }
 
-static bool initFreeType() {
-    return !FT_Init_FreeType(&s_freetype);
+bool FontRaster::rasterizeGlyphMTSDF(Codepoint character, GlyphBitmap &result) {
+    assert(false);
+    return false;
 }
 
-bool FontRaster::init() {
-    if (!s_freeTypeInitialized) {
-        s_freeTypeInitialized = initFreeType();
-        if (!s_freeTypeInitialized) {
-            RT_ERROR("Could not init FreeType Library");
-            return false;
-        }
-    }
-
-    return s_freeTypeInitialized;
-}
-
-void FontRaster::releaseFace() {
-    if (_face) {
-        FT_Done_Face(_face);
-        _face = nullptr;
-    }
-}
-
-bool FontRaster::rasterizeChar(wchar_t character, FT_Glyph &result) {
-    if (FT_Load_Char(_face, character, FT_LOAD_RENDER)) {
+bool FontRaster::rasterizeChar(Codepoint character, FT_Glyph &result) {
+    if (FT_Load_Char(_face, static_cast<FT_ULong>(character), FT_LOAD_RENDER)) {
         RT_ERROR("Failed to load Glyph {}", static_cast<char>(character));
         return false;
     }
