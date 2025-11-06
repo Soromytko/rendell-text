@@ -1,5 +1,7 @@
 #include "FontRaster.h"
 
+#include <cassert>
+
 namespace rendell_text {
 static uint32_t s_instanceCount = 0;
 static bool s_freeTypeInitialized = false;
@@ -36,7 +38,16 @@ const std::filesystem::path &FontRaster::getFontPath() const {
     return _fontPath;
 }
 
+uint32_t FontRaster::getWidth() const {
+    return _width;
+}
+
+uint32_t FontRaster::getHeight() const {
+    return _height;
+}
+
 int FontRaster::getFontHeight() const {
+    assert(_face);
     const FT_Pos lineHeight = _face->size->metrics.height >> 6;
     return lineHeight;
 }
@@ -67,7 +78,35 @@ bool FontRaster::loadFont(const std::filesystem::path &fontPath, uint32_t width,
     return true;
 }
 
-bool FontRaster::rasterize(wchar_t from, wchar_t to, FontRasterizationResult &result) {
+static std::vector<std::byte> convertBitmapToVector(FT_BitmapGlyph bitmap) {
+    if (bitmap->bitmap.width == 0 || bitmap->bitmap.rows == 0 || !bitmap->bitmap.buffer) {
+        return {};
+    }
+
+    const size_t width = static_cast<size_t>(bitmap->bitmap.width);
+    const size_t rows = static_cast<size_t>(bitmap->bitmap.rows);
+    const std::byte *data = reinterpret_cast<const std::byte *>(bitmap->bitmap.buffer);
+    const int pitch = bitmap->bitmap.pitch;
+
+    std::vector<std::byte> pixels;
+    pixels.resize(width * rows);
+    if (pitch >= 0) {
+        for (size_t rowIndex = 0; rowIndex < rows; rowIndex++) {
+            std::byte *out = pixels.data() + rowIndex * width;
+            const std::byte *src = data + rowIndex * static_cast<size_t>(pitch);
+            std::memcpy(out, src, width);
+        }
+    } else {
+        for (size_t rowIndex = 0; rowIndex < rows; rowIndex++) {
+            std::byte *out = pixels.data() + rowIndex * width;
+            const std::byte *src = data + (rows - 1 - rowIndex) * (-pitch);
+            std::memcpy(out, src, width);
+        }
+    }
+    return pixels;
+}
+
+RasterizedGlyphListSharedPtr FontRaster::rasterize(wchar_t from, wchar_t to) {
 #ifdef _DEBUG
     assert(s_freeTypeInitialized);
     assert(from < to);
@@ -75,14 +114,15 @@ bool FontRaster::rasterize(wchar_t from, wchar_t to, FontRasterizationResult &re
 
     if (!_face) {
         RT_ERROR("Font face is missing");
-        return false;
+        return nullptr;
     }
 
     const uint32_t charCount = static_cast<uint32_t>(to - from);
     auto texture2DArray =
         rendell::oop::makeTexture2DArray(_width, _height, charCount, rendell::TextureFormat::R);
-    std::vector<RasterizedChar> rasterizedChars{};
-    rasterizedChars.reserve(charCount);
+
+    RasterizedGlyphListSharedPtr result = createEmptyRasterizedGlyphList();
+    result->reserve(charCount);
 
     for (wchar_t currentChar = from; currentChar < to; currentChar++) {
         FT_Glyph glyph;
@@ -93,25 +133,27 @@ bool FontRaster::rasterize(wchar_t from, wchar_t to, FontRasterizationResult &re
 
         const FT_BitmapGlyph bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
 
-        if (bitmapGlyph->bitmap.width > 0 && bitmapGlyph->bitmap.rows > 0) {
+        /*if (bitmapGlyph->bitmap.width > 0 && bitmapGlyph->bitmap.rows > 0) {
             texture2DArray->setSubData(
                 static_cast<uint32_t>(currentChar - from),
                 static_cast<uint32_t>(bitmapGlyph->bitmap.width),
                 static_cast<uint32_t>(bitmapGlyph->bitmap.rows),
                 reinterpret_cast<const rendell::byte_t *>(bitmapGlyph->bitmap.buffer));
-        }
+        }*/
 
         RasterizedChar rasterizedChar{
-            currentChar, glm::ivec2(bitmapGlyph->bitmap.width, bitmapGlyph->bitmap.rows),
+            currentChar,
+            glm::ivec2(bitmapGlyph->bitmap.width, bitmapGlyph->bitmap.rows),
             glm::ivec2(bitmapGlyph->left, bitmapGlyph->top),
-            static_cast<uint32_t>(_face->glyph->advance.x)};
-        rasterizedChars.push_back(std::move(rasterizedChar));
+            static_cast<uint32_t>(_face->glyph->advance.x),
+            convertBitmapToVector(bitmapGlyph),
+        };
+        result->push_back(std::move(rasterizedChar));
 
         FT_Done_Glyph(glyph);
     }
 
-    result = {texture2DArray, std::move(rasterizedChars)};
-    return true;
+    return result;
 }
 
 static bool initFreeType() {

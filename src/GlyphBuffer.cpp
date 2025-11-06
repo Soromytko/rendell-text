@@ -1,15 +1,14 @@
 #include <rendell_text/private/GlyphBuffer.h>
 
 namespace rendell_text {
-GlyphBuffer::GlyphBuffer(wchar_t from, wchar_t to,
-                         FontRasterizationResult &&fontRasterizationResult) {
+GlyphBuffer::GlyphBuffer(wchar_t from, wchar_t to, RasterizedGlyphListSharedPtr rasterizedGlyphList)
+    : _rasterizedGlyphList(rasterizedGlyphList) {
 #ifdef _DEBUG
     assert(from >= 0);
     assert(from < to);
 #endif
     _range = {from, to};
 
-    _fontRasterizationResult = std::move(fontRasterizationResult);
     _textures = _fontRasterizationResult.texture2DArray;
 }
 
@@ -17,17 +16,8 @@ void GlyphBuffer::use(rendell::UniformSampler2DId uniformSampler2DId, uint32_t t
     _textures->use(uniformSampler2DId, textureBlock);
 }
 
-const RasterizedChar &GlyphBuffer::getRasterizedChar(wchar_t character) const {
-    const size_t index = static_cast<size_t>(character - _range.first);
-#ifdef _DEBUG
-    assert(index >= 0);
-    assert(index < _range.second);
-#endif
-    return _fontRasterizationResult.rasterizedChars[index];
-}
-
-const std::vector<RasterizedChar> &GlyphBuffer::getRasterizedChars() const {
-    return _fontRasterizationResult.rasterizedChars;
+const RasterizedGlyphListSharedPtr &GlyphBuffer::getRasterizedChars() const {
+    return _rasterizedGlyphList;
 }
 
 const std::pair<wchar_t, wchar_t> &GlyphBuffer::getRange() const {

@@ -2,31 +2,36 @@
 #include <rendell_text/private/GlyphBuffer.h>
 #include <rendell_text/private/IFontRaster.h>
 
-#include <map>
+#include <rendell/oop/rendell_oop.h>
+
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 namespace rendell_text {
 class RasteredFontStorage {
 public:
-    RasteredFontStorage(IFontRasterSharedPtr fontRaster, wchar_t charRangeSize);
+    RasteredFontStorage(IFontRasterSharedPtr fontRaster, size_t charRangeSize);
     ~RasteredFontStorage() = default;
 
     void clearCache();
-    GlyphBufferSharedPtr rasterizeGlyphRange(wchar_t rangeIndex);
+    RasterizedGlyphListSharedPtr rasterizeGlyphRange(size_t rangeIndex);
+    rendell::oop::Texture2DArraySharedPtr getOrCreateGlyphTexture(size_t rangeIndex);
 
-    wchar_t getRangeIndex(wchar_t character) const;
+    size_t getRangeIndex(wchar_t character) const;
     uint32_t getFontWidth() const;
     uint32_t getFontHeight() const;
     const IFontRasterSharedPtr getFontRaster() const;
 
 private:
-    GlyphBufferSharedPtr createGlyphBuffer(wchar_t rangeIndex);
+    RasterizedGlyphListSharedPtr rasterizeRange(size_t rangeIndex);
+    rendell::oop::Texture2DArraySharedPtr createGlyphTexture(size_t rangeIndex);
 
     IFontRasterSharedPtr _fontRaster;
     uint32_t _fontWidth = 64, _fontHeight = 64;
-    const wchar_t _charRangeSize;
-    std::map<wchar_t, std::shared_ptr<GlyphBuffer>> _cachedGlyphBuffers{};
+    const size_t _charRangeSize;
+    std::unordered_map<size_t, RasterizedGlyphListWeakPtr> _cachedRasterizedGlyphLists{};
+    std::unordered_map<size_t, rendell::oop::Texture2DArrayWeakPtr> _cachedGlyphTextures{};
 };
 
 RENDELL_USE_RAII_FACTORY(RasteredFontStorage)

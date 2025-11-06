@@ -13,13 +13,15 @@ public:
 
     bool isInitialized() const override;
     const std::filesystem::path &getFontPath() const override;
+    uint32_t getWidth() const override;
+    uint32_t getHeight() const override;
     int getFontHeight() const override;
     int getAscender() const override;
     int getDescender() const override;
 
     bool loadFont(const std::filesystem::path &fontPath, uint32_t width, uint32_t height) override;
 
-    bool rasterize(wchar_t from, wchar_t to, FontRasterizationResult &result) override;
+    RasterizedGlyphListSharedPtr rasterize(wchar_t from, wchar_t to) override;
 
 private:
     bool init();

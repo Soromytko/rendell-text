@@ -9,17 +9,15 @@
 namespace rendell_text {
 class GlyphBuffer {
 public:
-    GlyphBuffer(wchar_t from, wchar_t to, FontRasterizationResult &&fontRasterizationResult);
+    GlyphBuffer(wchar_t from, wchar_t to, RasterizedGlyphListSharedPtr rasterizedGlyphList);
 
     void use(rendell::UniformSampler2DId uniformSampler2DId, uint32_t textureBlock) const;
 
-    const RasterizedChar &getRasterizedChar(wchar_t character) const;
-    const std::vector<RasterizedChar> &getRasterizedChars() const;
+    const RasterizedGlyphListSharedPtr &getRasterizedGlyphList() const;
     const std::pair<wchar_t, wchar_t> &getRange() const;
 
 private:
-    FontRasterizationResult _fontRasterizationResult{};
-
+    RasterizedGlyphListSharedPtr _rasterizedGlyphList{};
     std::pair<wchar_t, wchar_t> _range{};
     rendell::oop::Texture2DArraySharedPtr _textures{};
 };
