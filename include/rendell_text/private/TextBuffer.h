@@ -1,5 +1,5 @@
 #pragma once
-#include "FontRasterizationResult.h"
+#include "RasterizedGlyph.h"
 
 #include <rendell/oop/rendell_oop.h>
 #include <rendell/rendell.h>
@@ -15,8 +15,8 @@ public:
     ~TextBuffer() = default;
 
     void beginUpdating();
-    void appendCharacter(const RasterizedChar &rasterizedChar, glm::vec2 offset);
-    void insertCharacter(const RasterizedChar &rasterizedChar, glm::vec2 offset, size_t index);
+    void appendCharacter(const RasterizedGlyph &rasterizedChar, glm::vec2 offset);
+    void insertCharacter(const RasterizedGlyph &rasterizedChar, glm::vec2 offset, size_t index);
     void endUpdating();
     void updateBufferSubData(size_t from, size_t to);
 

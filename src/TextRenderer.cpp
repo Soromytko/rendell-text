@@ -179,11 +179,16 @@ void TextRenderer::draw() {
     _textLayout->update();
 
     for (const TextBatchSharedPtr &textBatch : _textLayout->getTextBatchesForRendering()) {
-        const GlyphBuffer *glyphBuffer = textBatch->getGlyphBuffer();
-        for (const std::unique_ptr<TextBuffer> &textBuffer : textBatch->getTextBuffers()) {
+        for (size_t textBufferIndex = 0; textBufferIndex < textBatch->getTextBufferCount();
+             textBufferIndex++) {
+            textBatch->useTexture(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
+            textBatch->useTextBuffer(textBufferIndex, TEXT_BUFFER_BINDING,
+                                     GLYPH_TRANSFORM_BUFFER_BINDING);
+        }
+        for (const TextBufferUniquePtr &textBuffer : textBatch->getTextBuffers()) {
             s_shaderProgram->use();
             s_vertexAssembly->use();
-            glyphBuffer->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
+            textures->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
             textBuffer->use(TEXT_BUFFER_BINDING, GLYPH_TRANSFORM_BUFFER_BINDING);
             setUniforms();
             s_charFromUniformUniform->set(glyphBuffer->getRange().first);

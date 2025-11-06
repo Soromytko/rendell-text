@@ -1,5 +1,5 @@
 #pragma once
-#include "private/RasteredFontStorage.h"
+#include "GlyphAtlasCache.h"
 #include "private/TextBatch.h"
 
 #include <glm/glm.hpp>
@@ -10,8 +10,8 @@
 namespace rendell_text {
 class TextLayout final {
 public:
-    TextLayout();
-    ~TextLayout();
+    TextLayout(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache);
+    ~TextLayout() = default;
 
     bool isInitialized() const;
     const std::unordered_set<TextBatchSharedPtr> &getTextBatchesForRendering() const;
@@ -19,13 +19,11 @@ public:
 
     void update();
 
-    void setFontPath(const std::filesystem::path &fontPath);
+    void setGlyphAtlasCache(GlyphAtlasCacheSharedPtr glyphAtlasCache);
     void setText(const std::wstring &value);
     void setText(std::wstring &&value);
-    void setFontSize(const glm::ivec2 &fontSize);
 
-    const std::filesystem::path &getFontPath() const;
-    glm::ivec2 getFontSize() const;
+    GlyphAtlasCacheSharedPtr getGlyphAtlasCache() const;
     const std::wstring &getText() const;
     size_t getTextLength() const;
     uint32_t getFontHeight() const;
@@ -46,10 +44,9 @@ private:
     void updateBuffersIfNeeded() const;
 
     RasteredFontStorageSharedPtr getRasteredFontStorage() const;
-    TextBatchSharedPtr createTextBatch(wchar_t character) const;
+    TextBatchSharedPtr getOrCreateTextBatch(wchar_t character) const;
 
-    glm::ivec2 _fontSize = glm::ivec2(64, 64);
-    std::filesystem::path _fontPath{};
+    GlyphAtlasCacheSharedPtr _glyphAtlasCache;
     std::wstring _text{};
 
     mutable RasteredFontStorageSharedPtr _rasteredFontStorage{nullptr};

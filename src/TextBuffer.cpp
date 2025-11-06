@@ -20,14 +20,14 @@ void TextBuffer::beginUpdating() {
     _counter = 0;
 }
 
-void TextBuffer::appendCharacter(const RasterizedChar &rasterizedChar, glm::vec2 offset) {
+void TextBuffer::appendCharacter(const RasterizedGlyph &rasterizedChar, glm::vec2 offset) {
     _textBufferData[_counter] = static_cast<uint32_t>(rasterizedChar.character);
     _transformBufferData[_counter] =
         glm::vec4(offset, rasterizedChar.glyphSize.x, rasterizedChar.glyphSize.y);
     _counter++;
 }
 
-void TextBuffer::insertCharacter(const RasterizedChar &rasterizedChar, glm::vec2 offset,
+void TextBuffer::insertCharacter(const RasterizedGlyph &rasterizedChar, glm::vec2 offset,
                                  size_t index) {
     _textBufferData[index] = static_cast<uint32_t>(rasterizedChar.character);
     _transformBufferData[index] =

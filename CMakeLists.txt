@@ -8,26 +8,32 @@ set(RENDELL_TEXT_RENDELL_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../rendell)
 set(RENDELL_TEXT_LOGX_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx)
 
 set(SOURCES
+    src/Font.cpp
+    src/FontLoading.cpp
+    src/GlyphAtlasCache.cpp
     src/TextLayout.cpp
     src/TextRenderer.cpp
     src/TextBatch.cpp
     src/TextBuffer.cpp
-    src/GlyphBuffer.cpp
     src/RasteredFontStorage.cpp
     src/RasteredFontStorageManager.cpp
+    src/RasterizedGlyphRange.cpp
     src/FontRaster.cpp
     src/logging.cpp
 )
 
 set(HEADERS
     include/rendell_text/rendell_text.h
+    include/rendell_text/Font.h
+    include/rendell_text/FontLoading.h
+    include/rendell_text/GlyphBitmap.h
+    include/rendell_text/GlyphAtlasCache.h
     include/rendell_text/TextLayout.h
     include/rendell_text/TextRenderer.h
     include/rendell_text/private/TextBatch.h
     include/rendell_text/private/TextBuffer.h
-    include/rendell_text/private/GlyphBuffer.h
     include/rendell_text/private/IFontRaster.h
-    include/rendell_text/private/FontRasterizationResult.h
+    include/rendell_text/private/RasterizedGlyphRange.h
     include/rendell_text/private/RasteredFontStorage.h
     internal/logging.h
     src/RasteredFontStorageManager.h
@@ -66,3 +72,4 @@ target_include_directories(rendell_text PRIVATE internal)
 # FreeType
 add_subdirectory(freetype)
 target_link_libraries(rendell_text PRIVATE freetype)
+

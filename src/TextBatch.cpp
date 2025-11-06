@@ -1,11 +1,23 @@
 #include <rendell_text/private/TextBatch.h>
 
+#include <cassert>
+
 namespace rendell_text {
-TextBatch::TextBatch(GlyphBufferSharedPtr glyphBuffer, size_t textBufferSize) {
-    _glyphBuffer = glyphBuffer;
+TextBatch::TextBatch(RasterizedGlyphRangeSharedPtr rasterizedGlyphRange,
+                     rendell::oop::Texture2DArraySharedPtr textures, size_t textBufferSize) {
+    assert(rasterizedGlyphRange);
+    assert(textures);
+    assert(textBufferSize > 0);
+
+    _rasterizedGlyphRange = rasterizedGlyphRange;
+    _textures = textures;
     _textBufferSize = textBufferSize;
 
-    _textBuffers.push_back(std::make_unique<TextBuffer>(textBufferSize));
+    _textBuffers.push_back(makeUniqueTextBuffer(textBufferSize));
+}
+
+size_t TextBatch::getTextBufferCount() const {
+    return _textBuffers.size();
 }
 
 void TextBatch::beginUpdating() {
@@ -15,18 +27,22 @@ void TextBatch::beginUpdating() {
     }
 }
 
-void TextBatch::appendCharacter(wchar_t character, glm::vec2 offset) {
-    TextBuffer *textBuffer = _textBuffers[_counter].get();
+void TextBatch::appendCharacter(Char character, glm::vec2 offset) {
+    assert(_rasterizedGlyphRange);
+    assert(_rasterizedGlyphRange->getLength() > 0);
+    assert(character >= _rasterizedGlyphRange->at(0).character);
 
+    TextBuffer *textBuffer = _textBuffers[_counter].get();
     if (textBuffer->isFull()) {
         _counter++;
-        textBuffer = new TextBuffer(_textBufferSize);
-        _textBuffers.push_back(std::unique_ptr<TextBuffer>(textBuffer));
+        TextBufferUniquePtr newTextBuffer = makeUniqueTextBuffer(_textBufferSize);
+        textBuffer = newTextBuffer.get();
+        _textBuffers.push_back(std::move(newTextBuffer));
     }
 
-    const RasterizedChar &rasterizedChar = _glyphBuffer->getRasterizedChar(character);
-    glm::vec4 glyphTransform(offset, rasterizedChar.glyphSize.x, rasterizedChar.glyphSize.y);
-    textBuffer->appendCharacter(rasterizedChar, offset);
+    const RasterizedGlyph &rasterizedGlyph = _rasterizedGlyphRange->getGlyphByChar(character);
+    glm::vec4 glyphTransform(offset, rasterizedGlyph.glyphSize.x, rasterizedGlyph.glyphSize.y);
+    textBuffer->appendCharacter(rasterizedGlyph, offset);
 }
 
 void TextBatch::endUpdating() {
@@ -36,8 +52,23 @@ void TextBatch::endUpdating() {
     }
 }
 
-const GlyphBuffer *TextBatch::getGlyphBuffer() const {
-    return _glyphBuffer.get();
+void TextBatch::useTexture(rendell::UniformSampler2DId samplerId, uint32_t stage) {
+    assert(_textures);
+    _textures->use(samplerId, stage);
+}
+
+void TextBatch::useTextBuffer(size_t textBufferIndex, uint32_t textBufferBinding,
+                              uint32_t transformBufferBinding) {
+    assert(textBufferIndex < _textBuffers.size());
+    _textBuffers[textBufferIndex]->use(textBufferBinding, transformBufferBinding);
+}
+
+const RasterizedGlyphRange *TextBatch::getRasterizedGlyphRange() const {
+    return _rasterizedGlyphRange.get();
+}
+
+const rendell::oop::Texture2DArray *TextBatch::getTextures() const {
+    return _textures.get();
 }
 
 const std::vector<TextBufferUniquePtr> &TextBatch::getTextBuffers() const {
