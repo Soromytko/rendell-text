@@ -8,7 +8,7 @@ set(RENDELL_TEXT_RENDELL_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../rendell)
 set(RENDELL_TEXT_LOGX_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx)
 
 set(SOURCES
-    src/Font.cpp
+    src/initialization.cpp
     src/FontLoading.cpp
     src/GlyphAtlasCache.cpp
     src/TextLayout.cpp
@@ -23,19 +23,21 @@ set(SOURCES
 )
 
 set(HEADERS
+    include/rendell_text/initialization.h
     include/rendell_text/rendell_text.h
-    include/rendell_text/Font.h
     include/rendell_text/FontLoading.h
+    include/rendell_text/IFontRaster.h
     include/rendell_text/GlyphBitmap.h
     include/rendell_text/GlyphAtlasCache.h
     include/rendell_text/TextLayout.h
     include/rendell_text/TextRenderer.h
     include/rendell_text/private/TextBatch.h
     include/rendell_text/private/TextBuffer.h
-    include/rendell_text/private/IFontRaster.h
     include/rendell_text/private/RasterizedGlyphRange.h
     include/rendell_text/private/RasteredFontStorage.h
+
     internal/logging.h
+
     src/RasteredFontStorageManager.h
     src/FontRaster.h
     src/freetype.h
@@ -71,5 +73,18 @@ target_include_directories(rendell_text PRIVATE internal)
 
 # FreeType
 add_subdirectory(freetype)
+add_library(Freetype::Freetype ALIAS freetype)
 target_link_libraries(rendell_text PRIVATE freetype)
 
+# tinyxml2
+add_subdirectory(tinyxml2)
+add_library(tinyxml2::tinyxml2 ALIAS tinyxml2)
+
+# msdfgen
+set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_CORE_ONLY OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
+add_subdirectory(msdfgen)
+target_link_libraries(rendell_text PRIVATE msdfgen-core msdfgen-ext)

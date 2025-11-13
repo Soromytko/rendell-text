@@ -4,6 +4,8 @@
 
 namespace rendell_text {
 enum class AtlasType {
+    bitmap,
+    sdf,
     msdf,
     mtsdf,
 };

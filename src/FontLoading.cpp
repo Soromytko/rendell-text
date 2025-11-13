@@ -1,11 +1,12 @@
 #include <rendell_text/FontLoading.h>
 
+#include "FontRaster.h"
 #include <logging.h>
 
 #include <cassert>
 
 namespace rendell_text {
-std::shared_ptr<Font> loadFont(const std::filesystem::path &path) {
+IFontRasterSharedPtr loadFont(const std::filesystem::path &path) {
     assert(!path.empty());
 
     std::ifstream file(path, std::ios::binary | std::ios::ate);
@@ -24,9 +25,11 @@ std::shared_ptr<Font> loadFont(const std::filesystem::path &path) {
     std::vector<std::byte> buffer(static_cast<size_t>(size));
     if (!file.read(reinterpret_cast<char *>(buffer.data()), size)) {
         RT_ERROR("Failed to read font file: {}", path.string());
-        return false;
+        return nullptr;
     }
 
-    return std::make_shared<Font>(std::move(buffer));
+    FontRasterSharedPtr fontRaster = makeFontRaster();
+    fontRaster->setFontData(buffer.data(), buffer.size());
+    return fontRaster;
 }
 } // namespace rendell_text

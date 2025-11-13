@@ -1,9 +1,9 @@
 #pragma once
-#include "Font.h"
+#include <IFontRaster.h>
 
 #include <filesystem>
 #include <memory>
 
 namespace rendell_text {
-std::shared_ptr<Font> loadFont(const std::filesystem::path &path);
-}
+IFontRasterSharedPtr loadFont(const std::filesystem::path &path);
+} // namespace rendell_text

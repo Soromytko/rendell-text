@@ -1,24 +1,25 @@
 #pragma once
-#include "Font.h"
 #include "GlyphBitmap.h"
+#include "IFontRaster.h"
 
 #include <rendell/oop/raii.h>
 
-#include <memory>
+#include <unordered_map>
 
 namespace rendell_text {
 class GlyphAtlasCache final {
 public:
-    GlyphAtlasCache(FontSharedPtr font, AtlasType atlasType = AtlasType::msdf);
+    GlyphAtlasCache(IFontRasterSharedPtr fontRaster, AtlasType atlasType = AtlasType::msdf);
     ~GlyphAtlasCache() = default;
 
-    FontSharedPtr getFont() const;
-    const GlyphBitmap &getGlyphBitmap() const;
+    const GlyphBitmap &getGlyphBitmap(Codepoint character) const;
     uint32_t getFontHeight() const;
 
 private:
-    FontSharedPtr _font;
+    IFontRasterSharedPtr _fontRaster;
     AtlasType _atlasType;
+
+    mutable std::unordered_map<Codepoint, GlyphBitmap> _glyphs;
 };
 
 RENDELL_USE_RAII_FACTORY(GlyphAtlasCache)

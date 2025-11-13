@@ -116,13 +116,15 @@ void TextLayout::updateShaderBuffers() const {
     glm::vec2 currentOffset(0.0f, 0.0f);
     const size_t length = _text.length();
     for (size_t i = 0; i < length; i++) {
-        const wchar_t currentCharacter = _text[i];
+        const Codepoint currentCharacter = _text[i];
 
         if (currentCharacter == '\n') {
             currentOffset.x = 0.0f;
             currentOffset.y += static_cast<float>(_glyphAtlasCache->getFontHeight());
             continue;
         }
+
+        const GlyphBitmap &glyph = _glyphAtlasCache->getGlyphBitmap(currentCharacter);
 
         const TextBatchSharedPtr &textBatch = getOrCreateTextBatch(currentCharacter);
         if (!textBatch) {

@@ -1,19 +1,26 @@
 #include <rendell_text/GlyphAtlasCache.h>
 
 namespace rendell_text {
-GlyphAtlasCache::GlyphAtlasCache(FontSharedPtr font, AtlasType atlasType) {
-    assert(font);
+GlyphAtlasCache::GlyphAtlasCache(IFontRasterSharedPtr fontRaster, AtlasType atlasType) {
+    assert(fontRaster);
     // TODO: Needs to be implemented.
     assert(atlasType != AtlasType::mtsdf);
-    _font = font;
+    _fontRaster = fontRaster;
     _atlasType = atlasType;
 }
 
-FontSharedPtr GlyphAtlasCache::getFont() const {
-    return _font;
-}
+const GlyphBitmap &GlyphAtlasCache::getGlyphBitmap(Codepoint character) const {
+    assert(_fontRaster);
 
-const GlyphBitmap &GlyphAtlasCache::getGlyphBitmap() const {
-    // TODO: insert return statement here
+    auto it = _glyphs.find(character);
+    if (it != _glyphs.end()) {
+        return it->second;
+    }
+
+    GlyphBitmap &glyphBitmap = _glyphs[character];
+    if (!_fontRaster->rasterizeGlyph(character, _atlasType, glyphBitmap)) {
+        assert(false);
+    }
+    return glyphBitmap;
 }
 } // namespace rendell_text
