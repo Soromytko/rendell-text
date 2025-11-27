@@ -1,6 +1,5 @@
-#include <rendell_text/TextLayout.h>
-
-#include <logging.h>
+#include <TextLayout.h>
+#include <TextLayout.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
@@ -17,42 +16,15 @@ TextLayout::TextLayout(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) {
     _glyphAtlasCache = glyphAtlasCache;
 }
 
-const std::unordered_set<TextBatchSharedPtr> &TextLayout::getTextBatchesForRendering() const {
-    return _textBatchesForRendering;
+bool TextLayout::isEmpty() const {
+    return _text.length() == 0;
 }
 
-std::wstring TextLayout::getSubText(size_t indexFrom) const {
-    assert(indexFrom < _text.length());
-    return std::wstring(_text.begin() + indexFrom, _text.end());
-}
-
-void TextLayout::update() {
-    updateBuffersIfNeeded();
-}
-
-void TextLayout::setGlyphAtlasCache(GlyphAtlasCacheSharedPtr glyphAtlasCache) {
-    assert(glyphAtlasCache);
-    if (glyphAtlasCache != glyphAtlasCache) {
-        _glyphAtlasCache = glyphAtlasCache;
-        // TODO: Update
-    }
-}
-
-void TextLayout::setText(const std::wstring &value) {
-    std::wstring text = value;
-    setText(std::move(text));
-}
-
-void TextLayout::setText(std::wstring &&value) {
-    _text = std::move(value);
-    _updateActionFlags |= UPDATE_BUFFER_FLAG;
-}
-
-GlyphAtlasCacheSharedPtr TextLayout::getGlyphAtlasCache() const {
+std::shared_ptr<GlyphAtlasCache> TextLayout::getGlyphAtlasCache() const {
     return _glyphAtlasCache;
 }
 
-const std::wstring &TextLayout::getText() const {
+const std::u32string &TextLayout::getText() const {
     return _text;
 }
 
@@ -60,7 +32,7 @@ size_t TextLayout::getTextLength() const {
     return _text.length();
 }
 
-uint32_t TextLayout::getFontHeight() const {
+uint32_t TextLayout::getHeight() const {
     return static_cast<uint32_t>(_rasteredFontStorage->getFontRaster()->getFontHeight());
 }
 
@@ -73,49 +45,88 @@ uint32_t TextLayout::getDescender() const {
 }
 
 const std::vector<uint32_t> &TextLayout::getTextAdvance() const {
-    updateBuffersIfNeeded();
     return _textAdvance;
 }
 
+std::u32string TextLayout::getSubText(size_t indexFrom) const {
+    assert(indexFrom < _text.length());
+    return std::u32string(_text.begin() + indexFrom, _text.end());
+}
+
+void TextLayout::update() {
+    if (_isDirty) {
+        updateBuffers();
+        _isDirty = false;
+    }
+}
+
+void TextLayout::setGlyphAtlasCache(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) {
+    assert(glyphAtlasCache);
+    if (glyphAtlasCache != glyphAtlasCache) {
+        _glyphAtlasCache = glyphAtlasCache;
+        updateBuffers();
+    }
+}
+
+void TextLayout::setText(const std::u32string &value) {
+    std::u32string text = value;
+    setText(std::move(text));
+}
+
+void TextLayout::setText(std::u32string &&value) {
+    if (_text != value) {
+        _text = std::move(value);
+        _isDirty = true;
+    }
+}
+
 void TextLayout::eraseText(size_t startIndex) {
+    assert(startIndex < _text.length());
     eraseText(startIndex, _text.length() - startIndex);
+    _isDirty = true;
 }
 
 void TextLayout::eraseText(size_t startIndex, size_t count) {
     assert(startIndex >= 0 && startIndex + count <= _text.length());
     _text.erase(startIndex, count);
-    _updateActionFlags |= UPDATE_BUFFER_FLAG;
+    updateBuffers(startIndex);
+    _isDirty = true;
 }
 
-void TextLayout::insertText(const std::wstring &text, size_t startIndex) {
+void TextLayout::insertText(const std::u32string &text, size_t startIndex) {
     assert(startIndex >= 0 && startIndex <= _text.length());
     _text.insert(startIndex, text);
-    _updateActionFlags |= UPDATE_BUFFER_FLAG;
+    updateBuffers(startIndex);
+    _isDirty = true;
 }
 
-void TextLayout::appendText(const std::wstring &text) {
+void TextLayout::appendText(const std::u32string &text) {
     if (!text.empty()) {
+        const size_t updatedTextLenght = text.length();
         _text += text;
-        _updateActionFlags |= UPDATE_BUFFER_FLAG;
+        updateBuffers(updatedTextLenght);
+        _isDirty = true;
     }
 }
 
-static glm::vec2 getInstanceLocalOffset(const RasterizedGlyph &rasterizedChar) {
-    const glm::vec2 bearing = rasterizedChar.glyphBearing;
-    const glm::vec2 size = rasterizedChar.glyphSize;
+static glm::vec2 getInstanceLocalOffset(const GlyphBitmap &glyphBitmap) {
+    const glm::vec2 bearing = glyphBitmap.glyphBearing;
+    const glm::vec2 size = glyphBitmap.glyphSize;
     return glm::vec2(bearing.x, bearing.y - size.y);
 }
 
-void TextLayout::updateShaderBuffers() const {
+void TextLayout::updateBuffers(size_t startFrom) {
     assert(_glyphAtlasCache);
 
-    _textBatchesForRendering.clear();
-    _textAdvance.resize(_text.length());
-    auto it = _textAdvance.begin();
+    const size_t textLength = _text.length();
+    assert(startFrom < textLength);
+
+    _uvs.resize(textLength);
+    _transforms.resize(textLength);
+    _textAdvance.resize(textLength);
 
     glm::vec2 currentOffset(0.0f, 0.0f);
-    const size_t length = _text.length();
-    for (size_t i = 0; i < length; i++) {
+    for (size_t i = startFrom; i < textLength; i++) {
         const Codepoint currentCharacter = _text[i];
 
         if (currentCharacter == '\n') {
@@ -124,62 +135,16 @@ void TextLayout::updateShaderBuffers() const {
             continue;
         }
 
-        const GlyphBitmap &glyph = _glyphAtlasCache->getGlyphBitmap(currentCharacter);
-
-        const TextBatchSharedPtr &textBatch = getOrCreateTextBatch(currentCharacter);
-        if (!textBatch) {
-            RT_ERROR("Failed to create text batch");
-            return;
-        }
-
-        if (_textBatchesForRendering.find(textBatch) == _textBatchesForRendering.end()) {
-            textBatch->beginUpdating();
-            _textBatchesForRendering.insert(textBatch);
-        }
-
-        const RasterizedGlyph &rasterizedChar =
-            textBatch->getRasterizedGlyphRange()->getGlyphByChar(currentCharacter);
+        const Glyph &glyph = _glyphAtlasCache->getOrRasterizeGlyph(currentCharacter);
 
         if (currentCharacter != ' ' && currentCharacter != '\t') {
-            const glm::vec2 glyphOffset = currentOffset + getInstanceLocalOffset(rasterizedChar);
-            textBatch->appendCharacter(currentCharacter, glyphOffset);
+            const glm::vec2 glyphOffset = currentOffset + getInstanceLocalOffset(glyph.bitmap);
+            _transforms[i] =
+                glm::vec4(glyphOffset, glyph.bitmap.glyphSize.x, glyph.bitmap.glyphSize.y);
         }
 
-        currentOffset.x += (rasterizedChar.glyphAdvance >> 6);
-        *it = static_cast<uint32_t>(currentOffset.x);
-        it++;
-    }
-
-    for (const TextBatchSharedPtr &textBatch : _textBatchesForRendering) {
-        textBatch->endUpdating();
+        currentOffset.x += (glyph.bitmap.glyphAdvance >> 6);
     }
 }
 
-void TextLayout::updateBuffersIfNeeded() const {
-    if (_updateActionFlags & CLEAR_BUFFER_CACHE_FLAG) {
-        _rasteredFontStorage = getRasteredFontStorage();
-        _cachedTextBatches.clear();
-        _textBatchesForRendering.clear();
-    }
-    if (_updateActionFlags & UPDATE_BUFFER_FLAG) {
-        updateShaderBuffers();
-    }
-    _updateActionFlags = 0;
-}
-
-TextBatchSharedPtr TextLayout::getOrCreateTextBatch(wchar_t character) const {
-    const wchar_t rangeIndex = _rasteredFontStorage->getRangeIndex(character);
-    if (auto it = _cachedTextBatches.find(rangeIndex); it != _cachedTextBatches.end()) {
-        return it->second;
-    }
-
-    RasterizedGlyphRangeSharedPtr rasterizedGlyphRange =
-        _rasteredFontStorage->rasterizeGlyphRange(rangeIndex);
-    if (!rasterizedGlyphRange) {
-        return nullptr;
-    }
-    TextBatchSharedPtr result = makeTextBatch(rasterizedGlyphRange, TEXT_BUFFER_SIZE);
-    _cachedTextBatches[rangeIndex] = result;
-    return result;
-}
 } // namespace rendell_text

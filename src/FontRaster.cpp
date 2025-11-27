@@ -5,23 +5,9 @@
 #include <msdfgen-ext.h>
 #include <msdfgen.h>
 
-#include <algorithm>
 #include <cassert>
-#include <memory>
 
 namespace rendell_text {
-FontRaster::~FontRaster() {
-    if (_freetypeHandle) {
-        msdfgen::deinitializeFreetype(_freetypeHandle);
-        _freetypeHandle = nullptr;
-    }
-
-    if (_fontHandle) {
-        msdfgen::destroyFont(_fontHandle);
-        _fontHandle = nullptr;
-    }
-}
-
 FontRaster::FontRaster() {
     FT_Error error = FT_Init_FreeType(&_freetype);
     if (error) {
@@ -36,16 +22,28 @@ FontRaster::FontRaster() {
     }
 }
 
+FontRaster::~FontRaster() {
+    if (_freetypeHandle) {
+        msdfgen::deinitializeFreetype(_freetypeHandle);
+        _freetypeHandle = nullptr;
+    }
+
+    if (_fontHandle) {
+        msdfgen::destroyFont(_fontHandle);
+        _fontHandle = nullptr;
+    }
+}
+
 const std::filesystem::path &FontRaster::getFontPath() const {
     return _fontPath;
 }
 
-uint32_t FontRaster::getWidth() const {
-    return _width;
+uint32_t FontRaster::getGlyphWidth() const {
+    return _fontWidth;
 }
 
-uint32_t FontRaster::getHeight() const {
-    return _height;
+uint32_t FontRaster::getGlyphHeight() const {
+    return _fontHeight;
 }
 
 int FontRaster::getFontHeight() const {
@@ -85,12 +83,16 @@ bool FontRaster::setFontData(const std::byte *data, size_t size) {
 }
 
 void FontRaster::setFontSize(uint32_t width, uint32_t height) {
-    _width = width;
-    _height = height;
+    assert(_face);
+    if (_fontWidth == width && _fontHeight == height) {
+        return;
+    }
+    _fontWidth = width;
+    _fontHeight = height;
+    FT_Set_Pixel_Sizes(_face, _fontWidth, _fontHeight);
 }
 
 bool FontRaster::rasterizeGlyph(Codepoint character, AtlasType atlasType, GlyphBitmap &result) {
-    assert(_face);
     switch (atlasType) {
     case AtlasType::bitmap:
         return rasterizeGlyphBitmap(character, result);
@@ -152,7 +154,7 @@ bool FontRaster::rasterizeGlyphBitmap(Codepoint character, GlyphBitmap &result) 
     result.character = character;
     result.glyphSize = glm::ivec2(ftBitmapGlyph->bitmap.width, ftBitmapGlyph->bitmap.rows);
     result.glyphBearing = glm::ivec2(ftBitmapGlyph->left, ftBitmapGlyph->top);
-    result.glyphAdvance = static_cast<uint32_t>(_face->glyph->advance.x);
+    result.glyphAdvance = static_cast<uint32_t>(_face->glyph->advance.x >> 6);
     result.atlasType = AtlasType::bitmap;
     result.pixels = convertBitmapToVector(ftBitmapGlyph);
 
@@ -162,11 +164,11 @@ bool FontRaster::rasterizeGlyphBitmap(Codepoint character, GlyphBitmap &result) 
 }
 
 bool FontRaster::rasterizeGlyphSDF(Codepoint character, GlyphBitmap &result) {
+    assert(false);
     return false;
 }
 
 bool FontRaster::rasterizeGlyphMSDF(Codepoint character, GlyphBitmap &result) {
-    assert(_face);
     assert(_freetype);
     assert(_freetypeHandle);
 
@@ -178,8 +180,8 @@ bool FontRaster::rasterizeGlyphMSDF(Codepoint character, GlyphBitmap &result) {
     shape.normalize();
     msdfgen::edgeColoringSimple(shape, 3.0);
 
-    const auto glyphWidth = _width;
-    const auto glyphHeight = _height;
+    const auto glyphWidth = _fontWidth;
+    const auto glyphHeight = _fontHeight;
 
     double xMin, xMax, yMin, yMax;
     shape.bound(xMin, yMin, xMax, yMax);
@@ -201,18 +203,19 @@ bool FontRaster::rasterizeGlyphMSDF(Codepoint character, GlyphBitmap &result) {
     const size_t floatCount = glyphWidth * glyphHeight * 3;
 
     result.character = character;
-    result.glyphSize = glm::ivec2(_width, _height);
+    result.glyphSize = glm::ivec2(_fontWidth, _fontHeight);
     result.glyphBearing = glm::ivec2(static_cast<int>(slot->metrics.horiBearingX >> 6),
                                      static_cast<int>(slot->metrics.horiBearingY >> 6));
     result.glyphAdvance = static_cast<uint32_t>(slot->metrics.horiAdvance >> 6);
     result.atlasType = AtlasType::msdf;
-    result.pixels.resize(_width * _height * 3 * sizeof(float));
+    result.pixels.resize(_fontWidth * _fontHeight * 3 * sizeof(float));
     std::memcpy(result.pixels.data(), static_cast<const float *>(msdf), result.pixels.size());
 
     return true;
 }
 
 bool FontRaster::rasterizeGlyphMTSDF(Codepoint character, GlyphBitmap &result) {
+    assert(false);
     return false;
 }
 

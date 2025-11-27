@@ -1,16 +1,15 @@
-#include <rendell_text/TextRenderer.h>
+#include <TextRenderer.h>
+
+#include <TextLayout.h>
 
 #include "RasteredFontStorageManager.h"
 #include "res_Shaders_TextRenderer_fs.h"
 #include "res_Shaders_TextRenderer_vs.h"
+#include <GlyphAtlasTextureStorage.h>
 #include <logging.h>
-#include <rendell_text/private/IFontRaster.h>
 
-#include <glm/gtc/matrix_transform.hpp>
+#include <cassert>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <fstream>
-#include <memory>
 
 #define TEXTURE_ARRAY_BLOCK 0
 #define TEXT_BUFFER_BINDING 0
@@ -26,8 +25,6 @@ static std::unique_ptr<rendell::oop::Float4Uniform> s_textColorUniform{nullptr};
 static std::unique_ptr<rendell::oop::Float4Uniform> s_backgroundColorUniform{nullptr};
 static std::unique_ptr<rendell::oop::Int1Uniform> s_charFromUniformUniform{nullptr};
 static std::unique_ptr<rendell::oop::Sampler2DUniform> s_texturesUniform{nullptr};
-static uint32_t s_instanceCount{};
-static bool s_initialized = false;
 
 static rendell::oop::VertexAssemblySharedPtr createVertexAssembly() {
     static std::vector<float> vertexPos{
@@ -92,7 +89,7 @@ static bool loadShaders(std::string &vertSrcResult, std::string &fragSrcResult) 
     return true;
 }
 
-static bool initStaticRendererStuff() {
+bool TextRenderer::initStaticStuff() {
     s_rasteredFontStorageManager.reset(new RasteredFontStorageManager);
 
     s_vertexAssembly = createVertexAssembly();
@@ -117,7 +114,7 @@ static bool initStaticRendererStuff() {
     return true;
 }
 
-static void releaseStaticRendererStuff() {
+void TextRenderer::releaseStaticStuff() {
     s_rasteredFontStorageManager.reset(nullptr);
     s_vertexAssembly.reset();
     s_shaderProgram.reset();
@@ -127,32 +124,26 @@ static void releaseStaticRendererStuff() {
     s_backgroundColorUniform.reset();
     s_charFromUniformUniform.reset();
     s_texturesUniform.reset();
-
-    s_initialized = false;
 }
 
-TextRenderer::TextRenderer() {
-    s_instanceCount++;
-    init();
+TextRenderer::TextRenderer(std::shared_ptr<ITextLayout> textLayout) {
+    assert(textLayout);
+    setTextLayout(textLayout);
 }
 
-TextRenderer::~TextRenderer() {
-    s_instanceCount--;
-    if (s_instanceCount == 0) {
-        releaseStaticRendererStuff();
-    }
-}
-
-bool TextRenderer::isInitialized() const {
-    return s_initialized;
-}
-
-const TextLayoutSharedPtr &TextRenderer::getTextLayout() const {
+std::shared_ptr<ITextLayout> TextRenderer::getTextLayout() const {
     return _textLayout;
 }
 
-void TextRenderer::setTextLayout(const TextLayoutSharedPtr &textLayout) {
-    _textLayout = textLayout;
+const glm::vec4 &TextRenderer::getColor() const {
+    return _color;
+}
+
+void TextRenderer::setTextLayout(std::shared_ptr<ITextLayout> textLayout) {
+    assert(textLayout);
+    if (_textLayout != textLayout) {
+        _textLayout = textLayout;
+    }
 }
 
 void TextRenderer::setMatrix(const glm::mat4 &matrix) {
@@ -167,12 +158,26 @@ void TextRenderer::setBackgroundColor(const glm::vec4 backgroundColor) {
     _backgroundColor = backgroundColor;
 }
 
-const glm::vec4 &TextRenderer::getColor() const {
-    return _color;
+void TextRenderer::prepare() {
+    assert(_textLayout);
+
+    auto glyphAtlasCache = _textLayout->getGlyphAtlasCache();
+    assert(glyphAtlasCache);
+    if (_glyphAtlasCache != glyphAtlasCache) {
+        _glyphAtlasCache = glyphAtlasCache;
+        _atlasTextures =
+            GlyphAtlasTextureStorage::getInstance()->getOrCreateAtlasTexture(_glyphAtlasCache);
+        assert(_atlasTextures);
+    }
+    assert(_atlasTextures);
+    _atlasTextures->prepare();
 }
 
 void TextRenderer::draw() {
-    if (!_textLayout || _textLayout->getText().length() == 0) {
+    assert(_textLayout);
+    assert(_atlasTextures);
+
+    if (_textLayout->isEmpty() == 0) {
         return;
     }
 
@@ -198,18 +203,6 @@ void TextRenderer::draw() {
             rendell::submit();
         }
     }
-}
-
-bool TextRenderer::init() {
-    if (!s_initialized) {
-        s_initialized = initStaticRendererStuff();
-    }
-
-    if (!s_initialized) {
-        return false;
-    }
-
-    return s_initialized;
 }
 
 void TextRenderer::setUniforms() {

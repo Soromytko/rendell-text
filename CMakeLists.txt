@@ -9,17 +9,21 @@ set(RENDELL_TEXT_LOGX_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx)
 
 set(SOURCES
     src/initialization.cpp
+    src/logging.cpp
+    
     src/FontLoading.cpp
+    src/SkylineGlyphAtlas.cpp
     src/GlyphAtlasCache.cpp
     src/TextLayout.cpp
     src/TextRenderer.cpp
-    src/TextBatch.cpp
     src/TextBuffer.cpp
     src/RasteredFontStorage.cpp
     src/RasteredFontStorageManager.cpp
     src/RasterizedGlyphRange.cpp
     src/FontRaster.cpp
-    src/logging.cpp
+    src/font_raster_creation.cpp
+    src/GlyphAtlasTexture.cpp
+    src/GlyphAtlasTextureStorage.cpp
 )
 
 set(HEADERS
@@ -28,15 +32,19 @@ set(HEADERS
     include/rendell_text/FontLoading.h
     include/rendell_text/IFontRaster.h
     include/rendell_text/GlyphBitmap.h
+    include/rendell_text/IGlyphAtlas.h
     include/rendell_text/GlyphAtlasCache.h
-    include/rendell_text/TextLayout.h
-    include/rendell_text/TextRenderer.h
-    include/rendell_text/private/TextBatch.h
-    include/rendell_text/private/TextBuffer.h
-    include/rendell_text/private/RasterizedGlyphRange.h
-    include/rendell_text/private/RasteredFontStorage.h
+    include/rendell_text/ITextLayout.h
+    include/rendell_text/ITextRenderer.h
+    include/rendell_text/font_raster_creation.h
 
     internal/logging.h
+    internal/SkylineGlyphAtlas.h
+    internal/TextLayout.h
+    internal/TextRenderer.h
+    internal/GlyphAtlasTexture.h
+    internal/GlyphAtlasTextureStorage.h
+    internal/TextBuffer.h
 
     src/RasteredFontStorageManager.h
     src/FontRaster.h
