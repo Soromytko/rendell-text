@@ -1,6 +1,9 @@
 #include <TextRenderer.h>
 
-#include <TextLayout.h>
+#include <GlyphAtlasTexture.h>
+#include <TextBuffer.h>
+#include <rendell/oop/rendell_oop.h>
+#include <rendell_text/ITextLayout.h>
 
 #include "RasteredFontStorageManager.h"
 #include "res_Shaders_TextRenderer_fs.h"
@@ -143,6 +146,7 @@ void TextRenderer::setTextLayout(std::shared_ptr<ITextLayout> textLayout) {
     assert(textLayout);
     if (_textLayout != textLayout) {
         _textLayout = textLayout;
+        _textBuffer = std::make_shared<TextBuffer>(_textLayout);
     }
 }
 
@@ -160,6 +164,7 @@ void TextRenderer::setBackgroundColor(const glm::vec4 backgroundColor) {
 
 void TextRenderer::prepare() {
     assert(_textLayout);
+    assert(_textBuffer);
 
     auto glyphAtlasCache = _textLayout->getGlyphAtlasCache();
     assert(glyphAtlasCache);
@@ -171,48 +176,44 @@ void TextRenderer::prepare() {
     }
     assert(_atlasTextures);
     _atlasTextures->prepare();
+
+    _textBuffer->prepare();
 }
 
 void TextRenderer::draw() {
     assert(_textLayout);
     assert(_atlasTextures);
+    assert(_textBuffer);
+
+    prepare();
 
     if (_textLayout->isEmpty() == 0) {
         return;
     }
 
-    _textLayout->update();
+    assert(_textBuffer->getLength() == _textLayout->getText().length());
 
-    for (const TextBatchSharedPtr &textBatch : _textLayout->getTextBatchesForRendering()) {
-        for (size_t textBufferIndex = 0; textBufferIndex < textBatch->getTextBufferCount();
-             textBufferIndex++) {
-            textBatch->useTexture(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
-            textBatch->useTextBuffer(textBufferIndex, TEXT_BUFFER_BINDING,
-                                     GLYPH_TRANSFORM_BUFFER_BINDING);
-        }
-        for (const TextBufferUniquePtr &textBuffer : textBatch->getTextBuffers()) {
-            s_shaderProgram->use();
-            s_vertexAssembly->use();
-            textures->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
-            textBuffer->use(TEXT_BUFFER_BINDING, GLYPH_TRANSFORM_BUFFER_BINDING);
-            setUniforms();
-            s_charFromUniformUniform->set(glyphBuffer->getRange().first);
-            const uint32_t instanceCount = static_cast<uint32_t>(textBuffer->getCurrentLength());
-            rendell::setDrawType(rendell::DrawMode::ArraysInstanced,
-                                 rendell::PrimitiveTopology::TriangleStrip, instanceCount);
-            rendell::submit();
-        }
-    }
-}
+    s_shaderProgram->use();
+    s_vertexAssembly->use();
 
-void TextRenderer::setUniforms() {
-    const glm::ivec2 fontSize = _textLayout->getFontSize();
+    const auto transformsBuffer = _textBuffer->getTransforms();
+    const auto textureArray = _atlasTextures->getTextureArray();
+
+    s_shaderProgram->use();
+    s_vertexAssembly->use();
+    transformsBuffer->use(s_transformUnifom->getId(), GLYPH_TRANSFORM_BUFFER_BINDING);
+    textureArray->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
 
     s_matrixUniform->set(glm::value_ptr(_matrix));
     s_fontSizeUniform->set(static_cast<float>(fontSize.x), static_cast<float>(fontSize.y));
     s_textColorUniform->set(_color.r, _color.g, _color.b, _color.a);
     s_backgroundColorUniform->set(_backgroundColor.r, _backgroundColor.g, _backgroundColor.b,
                                   _backgroundColor.a);
+
+    rendell::setDrawType(rendell::DrawMode::ArraysInstanced,
+                         rendell::PrimitiveTopology::TriangleStrip,
+                         static_cast<uint32_t>(_textBuffer->getLength()));
+    rendell::submit();
 }
 
 } // namespace rendell_text

@@ -33,7 +33,7 @@ set(HEADERS
     include/rendell_text/IFontRaster.h
     include/rendell_text/GlyphBitmap.h
     include/rendell_text/IGlyphAtlas.h
-    include/rendell_text/GlyphAtlasCache.h
+    include/rendell_text/IGlyphAtlasCache.h
     include/rendell_text/ITextLayout.h
     include/rendell_text/ITextRenderer.h
     include/rendell_text/font_raster_creation.h
@@ -42,9 +42,10 @@ set(HEADERS
     internal/SkylineGlyphAtlas.h
     internal/TextLayout.h
     internal/TextRenderer.h
+    internal/TextBuffer.h
+    internal/GlyphAtlasCache.h
     internal/GlyphAtlasTexture.h
     internal/GlyphAtlasTextureStorage.h
-    internal/TextBuffer.h
 
     src/RasteredFontStorageManager.h
     src/FontRaster.h

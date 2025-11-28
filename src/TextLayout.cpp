@@ -1,5 +1,6 @@
 #include <TextLayout.h>
-#include <TextLayout.h>
+
+#include <rendell_text/IGlyphAtlasCache.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
@@ -11,7 +12,7 @@ const size_t CLEAR_BUFFER_CACHE_FLAG = 1 << 0;
 const size_t UPDATE_BUFFER_FLAG = 1 << 1;
 
 namespace rendell_text {
-TextLayout::TextLayout(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) {
+TextLayout::TextLayout(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
     assert(_glyphAtlasCache);
     _glyphAtlasCache = glyphAtlasCache;
 }
@@ -20,7 +21,7 @@ bool TextLayout::isEmpty() const {
     return _text.length() == 0;
 }
 
-std::shared_ptr<GlyphAtlasCache> TextLayout::getGlyphAtlasCache() const {
+std::shared_ptr<IGlyphAtlasCache> TextLayout::getGlyphAtlasCache() const {
     return _glyphAtlasCache;
 }
 
@@ -60,7 +61,7 @@ void TextLayout::update() {
     }
 }
 
-void TextLayout::setGlyphAtlasCache(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) {
+void TextLayout::setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
     assert(glyphAtlasCache);
     if (glyphAtlasCache != glyphAtlasCache) {
         _glyphAtlasCache = glyphAtlasCache;

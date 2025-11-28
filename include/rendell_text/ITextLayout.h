@@ -1,14 +1,23 @@
 #pragma once
+#include <functional>
+#include <memory>
+#include <string>
+
+namespace rendell_text {
+class IGlyphAtlasCache;
+} // namespace rendell_text
 
 namespace rendell_text {
 class ITextLayout {
 public:
+    using ChangedCallback = std::function<void()>;
+
     ITextLayout() = default;
     virtual ~ITextLayout() = default;
 
     virtual bool isEmpty() const = 0;
 
-    virtual std::shared_ptr<GlyphAtlasCache> getGlyphAtlasCache() const = 0;
+    virtual std::shared_ptr<IGlyphAtlasCache> getGlyphAtlasCache() const = 0;
     virtual const std::u32string &getText() const = 0;
     virtual size_t getTextLength() const = 0;
     virtual uint32_t getHeight() const = 0;
@@ -18,7 +27,8 @@ public:
 
     virtual std::u32string getSubText(size_t indexFrom) const = 0;
 
-    virtual void setGlyphAtlasCache(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) = 0;
+    virtual void setChangedCallback(ChangedCallback callback) = 0;
+    virtual void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) = 0;
     virtual void setText(const std::u32string &value) = 0;
     virtual void setText(std::u32string &&value) = 0;
 

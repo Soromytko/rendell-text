@@ -1,5 +1,4 @@
 #pragma once
-#include <rendell_text/GlyphAtlasCache.h>
 #include <rendell_text/ITextLayout.h>
 
 #include <glm/glm.hpp>
@@ -8,12 +7,12 @@
 namespace rendell_text {
 class TextLayout final : public ITextLayout {
 public:
-    TextLayout(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache);
+    TextLayout(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache);
     ~TextLayout() = default;
 
     bool isEmpty() const override;
 
-    std::shared_ptr<GlyphAtlasCache> getGlyphAtlasCache() const override;
+    std::shared_ptr<IGlyphAtlasCache> getGlyphAtlasCache() const override;
     const std::u32string &getText() const override;
     size_t getTextLength() const override;
     uint32_t getHeight() const override;
@@ -23,7 +22,8 @@ public:
 
     std::u32string getSubText(size_t indexFrom) const override;
 
-    void setGlyphAtlasCache(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) override;
+    void setChangedCallback(ChangedCallback callback) override;
+    void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) override;
     void setText(const std::u32string &value) override;
     void setText(std::u32string &&value) override;
 
@@ -35,7 +35,7 @@ public:
 private:
     void updateBuffers(size_t startFrom = 0);
 
-    std::shared_ptr<GlyphAtlasCache> _glyphAtlasCache;
+    std::shared_ptr<IGlyphAtlasCache> _glyphAtlasCache;
     std::u32string _text{};
 
     struct UV {

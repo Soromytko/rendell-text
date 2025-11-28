@@ -1,10 +1,13 @@
 #pragma once
-#include <rendell/oop/Texture2DArray.h>
-#include <rendell_text/ITextRenderer.h>k
-
-#include <GlyphAtlasTexture.h>
+#include <rendell_text/ITextRenderer.h>
 
 #include <memory>
+
+namespace rendell_text {
+class TextBuffer;
+class IGlyphAtlasCache;
+class GlyphAtlasTexture;
+} // namespace rendell_text
 
 namespace rendell_text {
 class TextRenderer final : public ITextRenderer {
@@ -28,16 +31,14 @@ public:
 private:
     void setTextLayout(std::shared_ptr<ITextLayout> textLayout);
 
-    void setUniforms();
-
+    std::shared_ptr<IGlyphAtlasCache> _glyphAtlasCache{};
     std::shared_ptr<ITextLayout> _textLayout{};
-    std::shared_ptr<GlyphAtlasCache> _glyphAtlasCache{};
+    std::shared_ptr<TextBuffer> _textBuffer{};
+
+    std::shared_ptr<GlyphAtlasTexture> _atlasTextures{};
+
     glm::mat4 _matrix{};
     glm::vec4 _color{};
     glm::vec4 _backgroundColor{};
-
-    std::shared_ptr<GlyphAtlasTexture> _atlasTextures{};
 };
-
-RENDELL_USE_RAII_FACTORY(TextRenderer)
 } // namespace rendell_text
