@@ -12,6 +12,7 @@ public:
 
     bool isEmpty() const override;
 
+    size_t getVersion() const override;
     std::shared_ptr<IGlyphAtlasCache> getGlyphAtlasCache() const override;
     const std::u32string &getText() const override;
     size_t getTextLength() const override;
@@ -22,18 +23,22 @@ public:
 
     std::u32string getSubText(size_t indexFrom) const override;
 
-    void setChangedCallback(ChangedCallback callback) override;
     void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) override;
     void setText(const std::u32string &value) override;
     void setText(std::u32string &&value) override;
 
-    void eraseText(size_t startIndex)override;
-    void eraseText(size_t startIndex, size_t count)override;
-    void insertText(const std::u32string &text, size_t startIndex = 0)override;
-    void appendText(const std::u32string &text)override;
+    void addObserver(std::shared_ptr<IObserver> observer) override;
+    void removeObserver(std::shared_ptr<IObserver> observer) override;
+
+    void eraseText(size_t startIndex) override;
+    void eraseText(size_t startIndex, size_t count) override;
+    void insertText(const std::u32string &text, size_t startIndex = 0) override;
+    void appendText(const std::u32string &text) override;
 
 private:
     void updateBuffers(size_t startFrom = 0);
+
+    size_t _version{0};
 
     std::shared_ptr<IGlyphAtlasCache> _glyphAtlasCache;
     std::u32string _text{};
@@ -44,9 +49,10 @@ private:
         float v;
     };
 
+    std::vector<std::weak_ptr<IObserver>> _observers{};
+
     std::vector<UV> _uvs{};
     std::vector<glm::vec4> _transforms{};
     std::vector<uint32_t> _textAdvance{};
-    bool _isDirty{false};
 };
 } // namespace rendell_text

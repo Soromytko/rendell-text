@@ -21,6 +21,10 @@ bool TextLayout::isEmpty() const {
     return _text.length() == 0;
 }
 
+size_t TextLayout::getVersion() const {
+    return _version;
+}
+
 std::shared_ptr<IGlyphAtlasCache> TextLayout::getGlyphAtlasCache() const {
     return _glyphAtlasCache;
 }
@@ -54,13 +58,6 @@ std::u32string TextLayout::getSubText(size_t indexFrom) const {
     return std::u32string(_text.begin() + indexFrom, _text.end());
 }
 
-void TextLayout::update() {
-    if (_isDirty) {
-        updateBuffers();
-        _isDirty = false;
-    }
-}
-
 void TextLayout::setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
     assert(glyphAtlasCache);
     if (glyphAtlasCache != glyphAtlasCache) {
@@ -77,28 +74,28 @@ void TextLayout::setText(const std::u32string &value) {
 void TextLayout::setText(std::u32string &&value) {
     if (_text != value) {
         _text = std::move(value);
-        _isDirty = true;
+        updateBuffers();
+        _version++;
     }
 }
 
 void TextLayout::eraseText(size_t startIndex) {
     assert(startIndex < _text.length());
     eraseText(startIndex, _text.length() - startIndex);
-    _isDirty = true;
 }
 
 void TextLayout::eraseText(size_t startIndex, size_t count) {
     assert(startIndex >= 0 && startIndex + count <= _text.length());
     _text.erase(startIndex, count);
     updateBuffers(startIndex);
-    _isDirty = true;
+    _version++;
 }
 
 void TextLayout::insertText(const std::u32string &text, size_t startIndex) {
     assert(startIndex >= 0 && startIndex <= _text.length());
     _text.insert(startIndex, text);
     updateBuffers(startIndex);
-    _isDirty = true;
+    _version++;
 }
 
 void TextLayout::appendText(const std::u32string &text) {
@@ -106,7 +103,7 @@ void TextLayout::appendText(const std::u32string &text) {
         const size_t updatedTextLenght = text.length();
         _text += text;
         updateBuffers(updatedTextLenght);
-        _isDirty = true;
+        _version++;
     }
 }
 

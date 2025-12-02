@@ -3,7 +3,7 @@
 #include <cassert>
 
 namespace rendell_text {
-GlyphAtlasTexture::GlyphAtlasTexture(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) {
+GlyphAtlasTexture::GlyphAtlasTexture(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
     assert(glyphAtlasCache);
     setGlyphAtlasCache(glyphAtlasCache);
 }
@@ -12,62 +12,63 @@ void GlyphAtlasTexture::prepare() {
     assert(_glyphAtlasCache);
     assert(_texture);
 
-    const uint32_t glyphWidth = _glyphAtlasCache->getGlyphWidth();
-    const uint32_t glyphHeight = _glyphAtlasCache->getGlyphHeight();
-
-    if (_needResizeTexture) {
-        const auto &atlases = _glyphAtlasCache->getAtlases();
-        if (atlases.size() == 0) {
-            _texture.reset();
-            _dirtyFlags.clear();
-            return;
-        }
-        _texture = std::make_shared<rendell::oop::Texture2DArray>(
-            glyphWidth, glyphHeight, atlases.size(), rendell::TextureFormat::BGR);
-        for (size_t i = 0; i < atlases.size(); i++) {
-            const auto &atlas = atlases[i];
-            _texture->setSubData(static_cast<uint32_t>(i), atlas->getWidth(), atlas->getHeight(),
-                                 atlas->getPixels().data());
-        }
-        _dirtyFlags.clear();
+    if (_needsFullUpdate) {
+        recreateTextureArray();
+        _needsFullUpdate = false;
+        _version = _glyphAtlasCache->getVersion();
         return;
     }
 
-    if (_dirtyFlags.size() == 0) {
+    if (_version == _glyphAtlasCache->getVersion()) {
         return;
     }
 
     const auto &atlases = _glyphAtlasCache->getAtlases();
     assert(atlases.size() > 0);
-    for (auto it = _dirtyFlags.begin(); it != _dirtyFlags.end(); it++) {
-        const size_t dirtyIndex = *it;
-        assert(dirtyIndex < atlases.size());
-        const auto &atlas = atlases[dirtyIndex];
-        _texture->setSubData(static_cast<uint32_t>(dirtyIndex), atlas->getWidth(),
-                             atlas->getHeight(), atlas->getPixels().data());
+    if (atlases.size() != _atlasVersions.size()) {
+        recreateTextureArray();
+        _version = _glyphAtlasCache->getVersion();
+        _atlasVersions = _glyphAtlasCache->getAtlasVersions();
+        return;
     }
-    _dirtyFlags.clear();
+    assert(_texture);
+
+    for (size_t i = 0; i < _atlasVersions.size(); i++) {
+        const auto &atlas = atlases[i];
+        if (_atlasVersions[i] != atlas->getVersion()) {
+            _texture->setSubData(static_cast<uint32_t>(i), atlas->getWidth(), atlas->getHeight(),
+                                 atlas->getPixels().data());
+            _atlasVersions[i] = atlas->getVersion();
+        }
+    }
+    _version = _glyphAtlasCache->getVersion();
 }
 
-void GlyphAtlasTexture::setGlyphAtlasCache(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) {
+void GlyphAtlasTexture::setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
     assert(glyphAtlasCache);
     if (_glyphAtlasCache != glyphAtlasCache) {
         _glyphAtlasCache = glyphAtlasCache;
-        _glyphAtlasCache->setAtlasChangedCallback(
-            [this](GlyphAtlasCache::CallbackType action, size_t index, IGlyphAtlas *atlas) {
-                assert(atlas);
-                if (action == GlyphAtlasCache::CallbackType::atlasRemoved ||
-                    action == GlyphAtlasCache::CallbackType::atlasAdded) {
-                    _needResizeTexture = true;
-                    _dirtyFlags.clear();
-                    return;
-                }
+        _needsFullUpdate = true;
+    }
+}
 
-                assert(action == GlyphAtlasCache::CallbackType::atlasUpdated);
-                _dirtyFlags.insert(index);
-            });
+void GlyphAtlasTexture::recreateTextureArray() {
+    assert(_glyphAtlasCache);
+    const auto &atlases = _glyphAtlasCache->getAtlases();
+    if (atlases.size() == 0) {
+        _texture.reset();
+        return;
+    }
 
-        _needResizeTexture = true;
+    const uint32_t glyphWidth = _glyphAtlasCache->getGlyphWidth();
+    const uint32_t glyphHeight = _glyphAtlasCache->getGlyphHeight();
+
+    _texture = std::make_shared<rendell::oop::Texture2DArray>(
+        glyphWidth, glyphHeight, atlases.size(), rendell::TextureFormat::BGR);
+    for (size_t i = 0; i < atlases.size(); i++) {
+        const auto &atlas = atlases[i];
+        _texture->setSubData(static_cast<uint32_t>(i), atlas->getWidth(), atlas->getHeight(),
+                             atlas->getPixels().data());
     }
 }
 

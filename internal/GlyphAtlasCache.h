@@ -14,6 +14,7 @@ public:
     uint32_t getGlyphHeight() const override;
     uint32_t getAtlasCount() const override;
     uint32_t getFontHeight() const override;
+    std::vector<size_t> getAtlasVersions() const override;
     const std::vector<std::unique_ptr<IGlyphAtlas>> &getAtlases() const override;
 
     void setAtlasChangedCallback(AtlasChangedCallback callback) override;

@@ -3,7 +3,6 @@
 
 #include <rendell/DataType.h>
 
-#include <functional>
 #include <vector>
 
 namespace rendell_text {
@@ -15,13 +14,10 @@ public:
         float v;
     };
 
-    using ChangedCallback = std::function<void()>;
-
+    virtual size_t getVersion() const = 0;
     virtual uint32_t getWidth() const = 0;
     virtual uint32_t getHeight() const = 0;
     virtual const std::vector<rendell::byte_t> &getPixels() const = 0;
-
-    virtual void setChangedCallback(ChangedCallback callback) = 0;
 
     virtual bool tryInsert(const GlyphBitmap &glyph, GlyphInfo &glyphInfo) = 0;
 };

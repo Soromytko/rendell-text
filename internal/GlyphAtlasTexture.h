@@ -1,15 +1,14 @@
 #pragma once
 #pragma once
 #include <rendell/oop/Texture2DArray.h>
-#include <rendell_text/GlyphAtlasCache.h>
+#include <rendell_text/IGlyphAtlasCache.h>
 
 #include <memory>
-#include <unordered_set>
 
 namespace rendell_text {
 class GlyphAtlasTexture final {
 public:
-    GlyphAtlasTexture(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache);
+    GlyphAtlasTexture(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache);
     ~GlyphAtlasTexture() = default;
 
     void prepare();
@@ -17,12 +16,15 @@ public:
     void use();
 
 private:
-    void setGlyphAtlasCache(std::shared_ptr<GlyphAtlasCache> glyphAtlasCache);
+    void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache);
+    void recreateTextureArray();
+
+    size_t _version{0};
+    std::vector<size_t> _atlasVersions{};
 
     std::shared_ptr<rendell::oop::Texture2DArray> _texture{};
-    std::shared_ptr<GlyphAtlasCache> _glyphAtlasCache{};
-    std::unordered_set<size_t> _dirtyFlags{};
+    std::shared_ptr<IGlyphAtlasCache> _glyphAtlasCache{};
 
-    bool _needResizeTexture{};
+    bool _needsFullUpdate{};
 };
 } // namespace rendell_text

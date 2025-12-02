@@ -11,27 +11,30 @@ TextBuffer::TextBuffer(std::shared_ptr<ITextLayout> textLayout) {
 }
 
 size_t TextBuffer::getLength() const {
-    #error
-    //return 
+#error
+    // return
 }
 
 void TextBuffer::prepare() {
     assert(_textLayout);
 
-    if (!_isDirty) {
+    if (_needsFullUpdate) {
+        _textLayoutVersion = _textLayout->getVersion();
+        _needsFullUpdate = false;
         return;
     }
 
-    _isDirty = false;
+    if (_textLayoutVersion != _textLayout->getVersion()) {
+#error update buffers
+        _textLayoutVersion = _textLayout->getVersion();
+    }
 }
 
 void TextBuffer::setTextLayout(std::shared_ptr<ITextLayout> textLayout) {
     assert(textLayout);
-    if (_textLayout == textLayout) {
-        return;
+    if (_textLayout != textLayout) {
+        _textLayout = textLayout;
+        _needsFullUpdate = true;
     }
-    _textLayout = textLayout;
-
-    _textLayout->setChangedCallback([this]() { _isDirty = true; });
 }
 } // namespace rendell_text

@@ -1,6 +1,8 @@
-#include <rendell_text/GlyphAtlasCache.h>
+#include <GlyphAtlasCache.h>
 
 #include <SkylineGlyphAtlas.h>
+
+#include <algorithm>
 
 namespace rendell_text {
 GlyphAtlasCache::GlyphAtlasCache(IFontRasterSharedPtr fontRaster, AtlasType atlasType) {
@@ -9,6 +11,14 @@ GlyphAtlasCache::GlyphAtlasCache(IFontRasterSharedPtr fontRaster, AtlasType atla
     assert(atlasType != AtlasType::mtsdf);
     _fontRaster = fontRaster;
     _atlasType = atlasType;
+}
+
+std::vector<size_t> GlyphAtlasCache::getAtlasVersions() const {
+    std::vector<size_t> result;
+    result.reserve(_atlases.size());
+    std::transform(_atlases.begin(), _atlases.end(), std::back_inserter(result),
+                   [](const auto &atlas) { return atlas->getVersion(); });
+    return result;
 }
 
 const std::vector<std::unique_ptr<IGlyphAtlas>> &GlyphAtlasCache::getAtlases() const {

@@ -19,8 +19,8 @@ public:
     void setTextLayout(std::shared_ptr<ITextLayout> textLayout);
 
 private:
+    size_t _textLayoutVersion{0};
+    bool _needsFullUpdate{false};
     std::shared_ptr<ITextLayout> _textLayout{};
-
-    bool _isDirty{false};
 };
 } // namespace rendell_text
