@@ -20,6 +20,8 @@ public:
     uint32_t getAscender() const override;
     uint32_t getDescender() const override;
     const std::vector<uint32_t> &getTextAdvance() const override;
+    size_t getTransformUnitSize() const override;
+    size_t getUVUnitSize() const override;
     std::pair<const rendell::byte_t *, size_t> getTransforms() const override;
     std::pair<const rendell::byte_t *, size_t> getUVs() const override;
 

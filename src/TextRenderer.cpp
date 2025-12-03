@@ -17,6 +17,7 @@
 #define TEXTURE_ARRAY_BLOCK 0
 #define TEXT_BUFFER_BINDING 0
 #define GLYPH_TRANSFORM_BUFFER_BINDING 1
+#define GLYPH_UV_BUFFER_BINDING 1
 
 namespace rendell_text {
 static rendell::oop::VertexAssemblySharedPtr s_vertexAssembly;
@@ -164,11 +165,13 @@ void TextRenderer::setBackgroundColor(const glm::vec4 backgroundColor) {
 void TextRenderer::prepare() {
     assert(_textLayout);
     assert(_textBuffer);
+    assert(_newTextLayout);
 
     if (_textLayout != _newTextLayout.get()) {
         _textLayout = _newTextLayout.get();
         _textBuffer = std::make_shared<TextBuffer>(_newTextLayout);
     }
+    _textBuffer->prepare();
 
     auto glyphAtlasCache = _textLayout->getGlyphAtlasCache();
     assert(glyphAtlasCache);
@@ -195,23 +198,14 @@ void TextRenderer::draw() {
         return;
     }
 
-    assert(_textBuffer->getLength() == _textLayout->getText().length());
-
     s_shaderProgram->use();
     s_vertexAssembly->use();
-    _textBuffer->use();
+    _textBuffer->use(GLYPH_TRANSFORM_BUFFER_BINDING, GLYPH_UV_BUFFER_BINDING);
     _atlasTextures->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
 
-    const auto transformsBuffer = _textBuffer->getTransforms();
-    const auto textureArray = _atlasTextures->getTextureArray();
-
-    s_shaderProgram->use();
-    s_vertexAssembly->use();
-    transformsBuffer->use(s_transformUnifom->getId(), GLYPH_TRANSFORM_BUFFER_BINDING);
-    textureArray->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
-
     s_matrixUniform->set(glm::value_ptr(_matrix));
-    s_fontSizeUniform->set(static_cast<float>(fontSize.x), static_cast<float>(fontSize.y));
+    s_fontSizeUniform->set(static_cast<float>(_glyphAtlasCache->getGlyphWidth()),
+                           static_cast<float>(_glyphAtlasCache->getGlyphHeight()));
     s_textColorUniform->set(_color.r, _color.g, _color.b, _color.a);
     s_backgroundColorUniform->set(_backgroundColor.r, _backgroundColor.g, _backgroundColor.b,
                                   _backgroundColor.a);

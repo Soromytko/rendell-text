@@ -5,7 +5,7 @@
 #include <algorithm>
 
 namespace rendell_text {
-GlyphAtlasCache::GlyphAtlasCache(IFontRasterSharedPtr fontRaster, AtlasType atlasType)
+GlyphAtlasCache::GlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster, AtlasType atlasType)
     : _fontRaster(fontRaster)
     , _atlasType(atlasType) {
     assert(_fontRaster);
@@ -34,6 +34,16 @@ uint32_t GlyphAtlasCache::getAtlasCount() const {
 uint32_t GlyphAtlasCache::getFontHeight() const {
     assert(_fontRaster);
     return _fontRaster->getFontHeight();
+}
+
+uint32_t GlyphAtlasCache::getAscender() const {
+    assert(_fontRaster);
+    return _fontRaster->getAscender();
+}
+
+uint32_t GlyphAtlasCache::getDescender() const {
+    assert(_fontRaster);
+    return _fontRaster->getDescender();
 }
 
 std::vector<size_t> GlyphAtlasCache::getAtlasVersions() const {

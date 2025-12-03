@@ -1,7 +1,9 @@
 #include <GlyphAtlasTextureStorage.h>
 
+#include <GlyphAtlasTexture.h>
+#include <rendell_text/IGlyphAtlasCache.h>
+
 #include <cassert>
-#include <memory>
 
 namespace rendell_text {
 static std::unique_ptr<GlyphAtlasTextureStorage> s_instance{nullptr};
@@ -21,13 +23,13 @@ GlyphAtlasTextureStorage *GlyphAtlasTextureStorage::getInstance() {
     return nullptr;
 }
 
-static size_t getKey(GlyphAtlasCache *glyphAtlasCache) {
+static size_t getKey(IGlyphAtlasCache *glyphAtlasCache) {
     assert(glyphAtlasCache);
     return reinterpret_cast<size_t>(glyphAtlasCache);
 }
 
 std::shared_ptr<GlyphAtlasTexture> GlyphAtlasTextureStorage::getOrCreateAtlasTexture(
-    std::shared_ptr<GlyphAtlasCache> glyphAtlasCache) {
+    std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
     assert(glyphAtlasCache);
     const size_t key = getKey(glyphAtlasCache.get());
     auto it = _textures.find(key);

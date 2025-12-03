@@ -10,6 +10,7 @@ set(RENDELL_TEXT_LOGX_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx)
 set(SOURCES
     src/initialization.cpp
     src/logging.cpp
+    src/factory.cpp
     
     src/FontLoading.cpp
     src/SkylineGlyphAtlas.cpp
@@ -21,7 +22,6 @@ set(SOURCES
     src/RasteredFontStorageManager.cpp
     src/RasterizedGlyphRange.cpp
     src/FontRaster.cpp
-    src/font_raster_creation.cpp
     src/GlyphAtlasTexture.cpp
     src/GlyphAtlasTextureStorage.cpp
 )
@@ -29,6 +29,7 @@ set(SOURCES
 set(HEADERS
     include/rendell_text/initialization.h
     include/rendell_text/rendell_text.h
+    include/rendell_text/factory.h
     include/rendell_text/FontLoading.h
     include/rendell_text/IFontRaster.h
     include/rendell_text/GlyphBitmap.h
@@ -36,7 +37,6 @@ set(HEADERS
     include/rendell_text/IGlyphAtlasCache.h
     include/rendell_text/ITextLayout.h
     include/rendell_text/ITextRenderer.h
-    include/rendell_text/font_raster_creation.h
 
     internal/logging.h
     internal/SkylineGlyphAtlas.h

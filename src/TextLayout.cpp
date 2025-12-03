@@ -38,23 +38,28 @@ size_t TextLayout::getTextLength() const {
 }
 
 uint32_t TextLayout::getHeight() const {
-    return static_cast<uint32_t>(_rasteredFontStorage->getFontRaster()->getFontHeight());
+    assert(_glyphAtlasCache);
+    return static_cast<uint32_t>(_glyphAtlasCache->getFontHeight());
 }
 
 uint32_t TextLayout::getAscender() const {
-    return static_cast<uint32_t>(_rasteredFontStorage->getFontRaster()->getAscender());
+    return static_cast<uint32_t>(_glyphAtlasCache->getAscender());
 }
 
 uint32_t TextLayout::getDescender() const {
-    return static_cast<uint32_t>(_rasteredFontStorage->getFontRaster()->getDescender());
+    return static_cast<uint32_t>(_glyphAtlasCache->getDescender());
 }
 
 const std::vector<uint32_t> &TextLayout::getTextAdvance() const {
     return _textAdvance;
 }
 
-std::pair<const void *, double> func() {
-    return {nullptr, 3.14};
+size_t TextLayout::getTransformUnitSize() const {
+    return sizeof(glm::vec4);
+}
+
+size_t TextLayout::getUVUnitSize() const {
+    return sizeof(UV);
 }
 
 std::pair<const rendell::byte_t *, size_t> TextLayout::getTransforms() const {

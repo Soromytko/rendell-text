@@ -22,6 +22,8 @@ public:
     virtual uint32_t getGlyphHeight() const = 0;
     virtual uint32_t getAtlasCount() const = 0;
     virtual uint32_t getFontHeight() const = 0;
+    virtual uint32_t getAscender() const = 0;
+    virtual uint32_t getDescender() const = 0;
     virtual std::vector<size_t> getAtlasVersions() const = 0;
     virtual const std::vector<std::unique_ptr<IGlyphAtlas>> &getAtlases() const = 0;
 

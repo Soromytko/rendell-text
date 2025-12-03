@@ -1,8 +1,8 @@
 #pragma once
 
-#include "FontLoading.h"
-#include "GlyphAtlasCache.h"
-#include "TextLayout.h"
-#include "TextRenderer.h"
+#include "Factory.h"
+#include "IGlyphAtlasCache.h"
+#include "ITextLayout.h"
+#include "ITextRenderer.h"
 #include "font_raster_creation.h"
 #include "initialization.h"
