@@ -1,8 +1,8 @@
 #pragma once
 #include <rendell_text/ITextLayout.h>
 
-#include <glm/glm.hpp>
 #include <vector>
+#include <glm/glm.hpp>
 
 namespace rendell_text {
 class TextLayout final : public ITextLayout {
@@ -20,15 +20,14 @@ public:
     uint32_t getAscender() const override;
     uint32_t getDescender() const override;
     const std::vector<uint32_t> &getTextAdvance() const override;
+    std::pair<const rendell::byte_t *, size_t> getTransforms() const override;
+    std::pair<const rendell::byte_t *, size_t> getUVs() const override;
 
     std::u32string getSubText(size_t indexFrom) const override;
 
     void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) override;
     void setText(const std::u32string &value) override;
     void setText(std::u32string &&value) override;
-
-    void addObserver(std::shared_ptr<IObserver> observer) override;
-    void removeObserver(std::shared_ptr<IObserver> observer) override;
 
     void eraseText(size_t startIndex) override;
     void eraseText(size_t startIndex, size_t count) override;
@@ -48,8 +47,6 @@ private:
         float u;
         float v;
     };
-
-    std::vector<std::weak_ptr<IObserver>> _observers{};
 
     std::vector<UV> _uvs{};
     std::vector<glm::vec4> _transforms{};

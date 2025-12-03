@@ -17,12 +17,10 @@ public:
     std::vector<size_t> getAtlasVersions() const override;
     const std::vector<std::unique_ptr<IGlyphAtlas>> &getAtlases() const override;
 
-    void setAtlasChangedCallback(AtlasChangedCallback callback) override;
-
     const Glyph &getOrRasterizeGlyph(Codepoint character) override;
 
 private:
-    IGlyphAtlas *createAtlas();
+    IGlyphAtlas *addAtlas();
     IGlyphAtlas *getCurrentAtlas() const;
 
     IFontRasterSharedPtr _fontRaster;

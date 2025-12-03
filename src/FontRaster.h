@@ -21,7 +21,7 @@ public:
     const std::filesystem::path &getFontPath() const override;
     uint32_t getGlyphWidth() const override;
     uint32_t getGlyphHeight() const override;
-    int getFontHeight() const override;
+    uint32_t getFontHeight() const override;
     int getAscender() const override;
     int getDescender() const override;
 

@@ -135,7 +135,7 @@ TextRenderer::TextRenderer(std::shared_ptr<ITextLayout> textLayout) {
 }
 
 std::shared_ptr<ITextLayout> TextRenderer::getTextLayout() const {
-    return _textLayout;
+    return _newTextLayout;
 }
 
 const glm::vec4 &TextRenderer::getColor() const {
@@ -144,9 +144,8 @@ const glm::vec4 &TextRenderer::getColor() const {
 
 void TextRenderer::setTextLayout(std::shared_ptr<ITextLayout> textLayout) {
     assert(textLayout);
-    if (_textLayout != textLayout) {
-        _textLayout = textLayout;
-        _textBuffer = std::make_shared<TextBuffer>(_textLayout);
+    if (_newTextLayout != textLayout) {
+        _newTextLayout = textLayout;
     }
 }
 
@@ -166,6 +165,11 @@ void TextRenderer::prepare() {
     assert(_textLayout);
     assert(_textBuffer);
 
+    if (_textLayout != _newTextLayout.get()) {
+        _textLayout = _newTextLayout.get();
+        _textBuffer = std::make_shared<TextBuffer>(_newTextLayout);
+    }
+
     auto glyphAtlasCache = _textLayout->getGlyphAtlasCache();
     assert(glyphAtlasCache);
     if (_glyphAtlasCache != glyphAtlasCache) {
@@ -175,9 +179,9 @@ void TextRenderer::prepare() {
         assert(_atlasTextures);
     }
     assert(_atlasTextures);
-    _atlasTextures->prepare();
 
     _textBuffer->prepare();
+    _atlasTextures->prepare();
 }
 
 void TextRenderer::draw() {
@@ -195,6 +199,8 @@ void TextRenderer::draw() {
 
     s_shaderProgram->use();
     s_vertexAssembly->use();
+    _textBuffer->use();
+    _atlasTextures->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
 
     const auto transformsBuffer = _textBuffer->getTransforms();
     const auto textureArray = _atlasTextures->getTextureArray();

@@ -53,6 +53,22 @@ const std::vector<uint32_t> &TextLayout::getTextAdvance() const {
     return _textAdvance;
 }
 
+std::pair<const void *, double> func() {
+    return {nullptr, 3.14};
+}
+
+std::pair<const rendell::byte_t *, size_t> TextLayout::getTransforms() const {
+    const rendell::byte_t *bytes = reinterpret_cast<const rendell::byte_t *>(_transforms.data());
+    const size_t size = _transforms.size() * sizeof(glm::vec4);
+    return {bytes, size};
+}
+
+std::pair<const rendell::byte_t *, size_t> TextLayout::getUVs() const {
+    const rendell::byte_t *bytes = reinterpret_cast<const rendell::byte_t *>(_uvs.data());
+    const size_t size = _uvs.size() * sizeof(UV);
+    return {bytes, size};
+}
+
 std::u32string TextLayout::getSubText(size_t indexFrom) const {
     assert(indexFrom < _text.length());
     return std::u32string(_text.begin() + indexFrom, _text.end());

@@ -9,6 +9,10 @@ SkylineGlyphAtlas::SkylineGlyphAtlas(uint32_t width, uint32_t height)
     _pixels.resize(_width * _height * 3);
 }
 
+size_t SkylineGlyphAtlas::getVersion() const {
+    return _version;
+}
+
 uint32_t SkylineGlyphAtlas::getWidth() const {
     return _width;
 }
@@ -22,6 +26,7 @@ const std::vector<rendell::byte_t> &SkylineGlyphAtlas::getPixels() const {
 }
 
 bool SkylineGlyphAtlas::tryInsert(const GlyphBitmap &glyph, GlyphInfo &glyphInfo) {
+    _version++;
     return false;
 }
 } // namespace rendell_text

@@ -44,6 +44,12 @@ void GlyphAtlasTexture::prepare() {
     _version = _glyphAtlasCache->getVersion();
 }
 
+void GlyphAtlasTexture::use(rendell::UniformSampler2DId uniformId, size_t stage) {
+    assert(rendell::isValid(uniformId));
+    assert(_texture);
+    _texture->use(uniformId, stage);
+}
+
 void GlyphAtlasTexture::setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
     assert(glyphAtlasCache);
     if (_glyphAtlasCache != glyphAtlasCache) {

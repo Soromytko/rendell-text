@@ -1,6 +1,9 @@
 #pragma once
+#include <rendell/DataType.h>
+
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace rendell_text {
 class IGlyphAtlasCache;
@@ -22,6 +25,10 @@ public:
     virtual uint32_t getAscender() const = 0;
     virtual uint32_t getDescender() const = 0;
     virtual const std::vector<uint32_t> &getTextAdvance() const = 0;
+    virtual size_t getTransformUnitSize() const = 0;
+    virtual size_t getUVUnitSize() const = 0;
+    virtual std::pair<const rendell::byte_t *, size_t> getTransforms() const = 0;
+    virtual std::pair<const rendell::byte_t *, size_t> getUVs() const = 0;
 
     virtual std::u32string getSubText(size_t indexFrom) const = 0;
 

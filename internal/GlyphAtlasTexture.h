@@ -1,6 +1,7 @@
 #pragma once
 #pragma once
 #include <rendell/oop/Texture2DArray.h>
+#include <rendell/rendell.h>
 #include <rendell_text/IGlyphAtlasCache.h>
 
 #include <memory>
@@ -12,8 +13,7 @@ public:
     ~GlyphAtlasTexture() = default;
 
     void prepare();
-#error Implement use!
-    void use();
+    void use(rendell::UniformSampler2DId uniformId, size_t stage);
 
 private:
     void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache);

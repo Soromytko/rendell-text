@@ -5,12 +5,35 @@
 #include <algorithm>
 
 namespace rendell_text {
-GlyphAtlasCache::GlyphAtlasCache(IFontRasterSharedPtr fontRaster, AtlasType atlasType) {
-    assert(fontRaster);
+GlyphAtlasCache::GlyphAtlasCache(IFontRasterSharedPtr fontRaster, AtlasType atlasType)
+    : _fontRaster(fontRaster)
+    , _atlasType(atlasType) {
+    assert(_fontRaster);
     // TODO: Needs to be implemented.
-    assert(atlasType != AtlasType::mtsdf);
+    assert(_atlasType != AtlasType::mtsdf);
     _fontRaster = fontRaster;
     _atlasType = atlasType;
+    addAtlas();
+    assert(_atlases.size() > 0);
+}
+
+uint32_t GlyphAtlasCache::getGlyphWidth() const {
+    assert(_fontRaster);
+    return _fontRaster->getGlyphWidth();
+}
+
+uint32_t GlyphAtlasCache::getGlyphHeight() const {
+    assert(_fontRaster);
+    return _fontRaster->getGlyphWidth();
+}
+
+uint32_t GlyphAtlasCache::getAtlasCount() const {
+    return static_cast<uint32_t>(_atlases.size());
+}
+
+uint32_t GlyphAtlasCache::getFontHeight() const {
+    assert(_fontRaster);
+    return _fontRaster->getFontHeight();
 }
 
 std::vector<size_t> GlyphAtlasCache::getAtlasVersions() const {
@@ -40,20 +63,21 @@ const Glyph &GlyphAtlasCache::getOrRasterizeGlyph(Codepoint character) {
 
     IGlyphAtlas *atlas = getCurrentAtlas();
     assert(atlas);
+    assert(glyph.bitmap.glyphSize.x <= atlas->getWidth());
+    assert(glyph.bitmap.glyphSize.y <= atlas->getHeight());
 
     IGlyphAtlas::GlyphInfo glyphInfo;
     if (!atlas->tryInsert(glyph.bitmap, glyphInfo)) {
-        atlas = createAtlas();
+        atlas = addAtlas();
         assert(atlas);
         if (!atlas->tryInsert(glyph.bitmap, glyphInfo)) {
             assert(false);
         }
-
         return glyph;
     }
 }
 
-IGlyphAtlas *GlyphAtlasCache::createAtlas() {
+IGlyphAtlas *GlyphAtlasCache::addAtlas() {
     std::unique_ptr<SkylineGlyphAtlas> atlas = std::make_unique<SkylineGlyphAtlas>();
     IGlyphAtlas *result = atlas.get();
     _atlases.push_back(std::move(atlas));

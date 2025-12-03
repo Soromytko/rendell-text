@@ -32,8 +32,9 @@ private:
     void setTextLayout(std::shared_ptr<ITextLayout> textLayout);
 
     std::shared_ptr<IGlyphAtlasCache> _glyphAtlasCache{};
-    std::shared_ptr<ITextLayout> _textLayout{};
+    std::shared_ptr<ITextLayout> _newTextLayout{};
     std::shared_ptr<TextBuffer> _textBuffer{};
+    ITextLayout *_textLayout{};
 
     std::shared_ptr<GlyphAtlasTexture> _atlasTextures{};
 

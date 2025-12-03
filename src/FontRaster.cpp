@@ -46,10 +46,10 @@ uint32_t FontRaster::getGlyphHeight() const {
     return _fontHeight;
 }
 
-int FontRaster::getFontHeight() const {
+uint32_t FontRaster::getFontHeight() const {
     assert(_face);
     const FT_Pos lineHeight = _face->size->metrics.height >> 6;
-    return lineHeight;
+    return static_cast<uint32_t>(lineHeight);
 }
 
 int FontRaster::getAscender() const {
