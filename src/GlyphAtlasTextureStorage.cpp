@@ -10,7 +10,7 @@ static std::unique_ptr<GlyphAtlasTextureStorage> s_instance{nullptr};
 
 bool GlyphAtlasTextureStorage::init() {
     assert(!s_instance);
-    s_instance = std::make_unique<GlyphAtlasTextureStorage>(new GlyphAtlasTextureStorage());
+    s_instance.reset(new GlyphAtlasTextureStorage());
     return false;
 }
 
@@ -20,7 +20,8 @@ void GlyphAtlasTextureStorage::release() {
 }
 
 GlyphAtlasTextureStorage *GlyphAtlasTextureStorage::getInstance() {
-    return nullptr;
+    assert(s_instance);
+    return s_instance.get();
 }
 
 static size_t getKey(IGlyphAtlasCache *glyphAtlasCache) {

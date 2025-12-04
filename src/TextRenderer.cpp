@@ -5,7 +5,6 @@
 #include <rendell/oop/rendell_oop.h>
 #include <rendell_text/ITextLayout.h>
 
-#include "RasteredFontStorageManager.h"
 #include "res_Shaders_TextRenderer_fs.h"
 #include "res_Shaders_TextRenderer_vs.h"
 #include <GlyphAtlasTextureStorage.h>
@@ -22,7 +21,6 @@
 namespace rendell_text {
 static rendell::oop::VertexAssemblySharedPtr s_vertexAssembly;
 static rendell::oop::ShaderProgramSharedPtr s_shaderProgram;
-static std::unique_ptr<RasteredFontStorageManager> s_rasteredFontStorageManager;
 static std::unique_ptr<rendell::oop::Mat4Uniform> s_matrixUniform{nullptr};
 static std::unique_ptr<rendell::oop::Float2Uniform> s_fontSizeUniform{nullptr};
 static std::unique_ptr<rendell::oop::Float4Uniform> s_textColorUniform{nullptr};
@@ -94,8 +92,6 @@ static bool loadShaders(std::string &vertSrcResult, std::string &fragSrcResult) 
 }
 
 bool TextRenderer::initStaticStuff() {
-    s_rasteredFontStorageManager.reset(new RasteredFontStorageManager);
-
     s_vertexAssembly = createVertexAssembly();
     assert(s_vertexAssembly);
 
@@ -119,7 +115,6 @@ bool TextRenderer::initStaticStuff() {
 }
 
 void TextRenderer::releaseStaticStuff() {
-    s_rasteredFontStorageManager.reset(nullptr);
     s_vertexAssembly.reset();
     s_shaderProgram.reset();
     s_matrixUniform.reset();
@@ -171,7 +166,6 @@ void TextRenderer::prepare() {
         _textLayout = _newTextLayout.get();
         _textBuffer = std::make_shared<TextBuffer>(_newTextLayout);
     }
-    _textBuffer->prepare();
 
     auto glyphAtlasCache = _textLayout->getGlyphAtlasCache();
     assert(glyphAtlasCache);

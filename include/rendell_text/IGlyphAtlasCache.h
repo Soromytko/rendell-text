@@ -6,8 +6,8 @@
 
 namespace rendell_text {
 struct Glyph final {
-    GlyphBitmap bitmap;
-    IGlyphAtlas::GlyphInfo atlasInfo;
+    GlyphBitmap bitmap{};
+    IGlyphAtlas::GlyphInfo atlasInfo{};
 };
 } // namespace rendell_text
 

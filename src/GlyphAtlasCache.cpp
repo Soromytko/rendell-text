@@ -1,20 +1,24 @@
 #include <GlyphAtlasCache.h>
 
 #include <SkylineGlyphAtlas.h>
+#include <rendell_text/IFontRaster.h>
 
 #include <algorithm>
 
 namespace rendell_text {
-GlyphAtlasCache::GlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster, AtlasType atlasType)
+GlyphAtlasCache::GlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster, AtlasConfig atlasConfig)
     : _fontRaster(fontRaster)
-    , _atlasType(atlasType) {
+    , _atlasConfig(_atlasConfig) {
     assert(_fontRaster);
     // TODO: Needs to be implemented.
-    assert(_atlasType != AtlasType::mtsdf);
-    _fontRaster = fontRaster;
-    _atlasType = atlasType;
+    assert(_atlasConfig.type != AtlasType::mtsdf);
+    assert(_atlasConfig.height > 0 && _atlasConfig.width > 0);
     addAtlas();
     assert(_atlases.size() > 0);
+}
+
+size_t GlyphAtlasCache::getVersion() const {
+    return _version;
 }
 
 uint32_t GlyphAtlasCache::getGlyphWidth() const {
@@ -67,14 +71,14 @@ const Glyph &GlyphAtlasCache::getOrRasterizeGlyph(Codepoint character) {
     }
 
     Glyph &glyph = _glyphs[character];
-    if (!_fontRaster->rasterizeGlyph(character, _atlasType, glyph.bitmap)) {
+    if (!_fontRaster->rasterizeGlyph(character, _atlasConfig.type, glyph.bitmap)) {
         assert(false);
     }
 
     IGlyphAtlas *atlas = getCurrentAtlas();
     assert(atlas);
-    assert(glyph.bitmap.glyphSize.x <= atlas->getWidth());
-    assert(glyph.bitmap.glyphSize.y <= atlas->getHeight());
+    assert(static_cast<uint32_t>(glyph.bitmap.glyphSize.x) <= atlas->getWidth());
+    assert(static_cast<uint32_t>(glyph.bitmap.glyphSize.y) <= atlas->getHeight());
 
     IGlyphAtlas::GlyphInfo glyphInfo;
     if (!atlas->tryInsert(glyph.bitmap, glyphInfo)) {
@@ -83,12 +87,14 @@ const Glyph &GlyphAtlasCache::getOrRasterizeGlyph(Codepoint character) {
         if (!atlas->tryInsert(glyph.bitmap, glyphInfo)) {
             assert(false);
         }
-        return glyph;
     }
+    _version++;
+    return glyph;
 }
 
 IGlyphAtlas *GlyphAtlasCache::addAtlas() {
-    std::unique_ptr<SkylineGlyphAtlas> atlas = std::make_unique<SkylineGlyphAtlas>();
+    std::unique_ptr<SkylineGlyphAtlas> atlas =
+        std::make_unique<SkylineGlyphAtlas>(_atlasConfig.width, _atlasConfig.height);
     IGlyphAtlas *result = atlas.get();
     _atlases.push_back(std::move(atlas));
     return result;

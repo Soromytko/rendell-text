@@ -12,15 +12,11 @@ set(SOURCES
     src/logging.cpp
     src/factory.cpp
     
-    src/FontLoading.cpp
     src/SkylineGlyphAtlas.cpp
     src/GlyphAtlasCache.cpp
     src/TextLayout.cpp
     src/TextRenderer.cpp
     src/TextBuffer.cpp
-    src/RasteredFontStorage.cpp
-    src/RasteredFontStorageManager.cpp
-    src/RasterizedGlyphRange.cpp
     src/FontRaster.cpp
     src/GlyphAtlasTexture.cpp
     src/GlyphAtlasTextureStorage.cpp
@@ -30,7 +26,6 @@ set(HEADERS
     include/rendell_text/initialization.h
     include/rendell_text/rendell_text.h
     include/rendell_text/factory.h
-    include/rendell_text/FontLoading.h
     include/rendell_text/IFontRaster.h
     include/rendell_text/GlyphBitmap.h
     include/rendell_text/IGlyphAtlas.h
@@ -47,7 +42,6 @@ set(HEADERS
     internal/GlyphAtlasTexture.h
     internal/GlyphAtlasTextureStorage.h
 
-    src/RasteredFontStorageManager.h
     src/FontRaster.h
     src/freetype.h
 )

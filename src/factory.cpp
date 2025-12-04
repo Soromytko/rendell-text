@@ -12,9 +12,9 @@ std::shared_ptr<IFontRaster> createFontRaster() {
 }
 
 std::shared_ptr<IGlyphAtlasCache> createGlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster,
-                                                        AtlasType atlasType = AtlasType::msdf) {
+                                                        AtlasConfig atlasConfig) {
     assert(fontRaster);
-    return std::make_shared<GlyphAtlasCache>(fontRaster, atlasType);
+    return std::make_shared<GlyphAtlasCache>(fontRaster, atlasConfig);
 }
 
 std::shared_ptr<ITextLayout> createTextLayout(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {

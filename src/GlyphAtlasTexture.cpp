@@ -44,7 +44,7 @@ void GlyphAtlasTexture::prepare() {
     _version = _glyphAtlasCache->getVersion();
 }
 
-void GlyphAtlasTexture::use(rendell::UniformSampler2DId uniformId, size_t stage) {
+void GlyphAtlasTexture::use(rendell::UniformSampler2DId uniformId, uint32_t stage) {
     assert(rendell::isValid(uniformId));
     assert(_texture);
     _texture->use(uniformId, stage);
@@ -69,8 +69,9 @@ void GlyphAtlasTexture::recreateTextureArray() {
     const uint32_t glyphWidth = _glyphAtlasCache->getGlyphWidth();
     const uint32_t glyphHeight = _glyphAtlasCache->getGlyphHeight();
 
-    _texture = std::make_shared<rendell::oop::Texture2DArray>(
-        glyphWidth, glyphHeight, atlases.size(), rendell::TextureFormat::BGR);
+    _texture = std::make_shared<rendell::oop::Texture2DArray>(glyphWidth, glyphHeight,
+                                                              static_cast<uint32_t>(atlases.size()),
+                                                              rendell::TextureFormat::BGR);
     for (size_t i = 0; i < atlases.size(); i++) {
         const auto &atlas = atlases[i];
         _texture->setSubData(static_cast<uint32_t>(i), atlas->getWidth(), atlas->getHeight(),

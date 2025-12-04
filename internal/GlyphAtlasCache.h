@@ -1,16 +1,19 @@
 #pragma once
-#include <rendell_text/IFontRaster.h>
+#pragma once
 #include <rendell_text/IGlyphAtlasCache.h>
 
 #include <memory>
 #include <unordered_map>
 
 namespace rendell_text {
+class IFontRaster;
+
 class GlyphAtlasCache final : public IGlyphAtlasCache {
 public:
-    GlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster, AtlasType atlasType = AtlasType::msdf);
+    GlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster, AtlasConfig atlasConfig = {});
     ~GlyphAtlasCache() = default;
 
+    size_t getVersion() const override;
     uint32_t getGlyphWidth() const override;
     uint32_t getGlyphHeight() const override;
     uint32_t getAtlasCount() const override;
@@ -26,8 +29,10 @@ private:
     IGlyphAtlas *addAtlas();
     IGlyphAtlas *getCurrentAtlas() const;
 
+    size_t _version{};
+
     std::shared_ptr<IFontRaster> _fontRaster;
-    AtlasType _atlasType;
+    AtlasConfig _atlasConfig;
 
     std::unordered_map<Codepoint, Glyph> _glyphs{};
     std::vector<std::unique_ptr<IGlyphAtlas>> _atlases{};

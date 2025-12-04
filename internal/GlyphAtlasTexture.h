@@ -13,7 +13,7 @@ public:
     ~GlyphAtlasTexture() = default;
 
     void prepare();
-    void use(rendell::UniformSampler2DId uniformId, size_t stage);
+    void use(rendell::UniformSampler2DId uniformId, uint32_t stage);
 
 private:
     void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache);
