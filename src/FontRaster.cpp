@@ -38,7 +38,7 @@ const std::filesystem::path &FontRaster::getFontPath() const {
     return _fontPath;
 }
 
-uint32_t FontRaster::getGlyphWidth() const {
+uint32_t FontRaster::getFontWiidth() const {
     return _fontWidth;
 }
 
@@ -46,7 +46,7 @@ uint32_t FontRaster::getGlyphHeight() const {
     return _fontHeight;
 }
 
-uint32_t FontRaster::getFontHeight() const {
+uint32_t FontRaster::getLineHeight() const {
     assert(_face);
     const FT_Pos lineHeight = _face->size->metrics.height >> 6;
     return static_cast<uint32_t>(lineHeight);
@@ -152,7 +152,8 @@ bool FontRaster::rasterizeGlyphBitmap(Codepoint character, GlyphBitmap &result) 
     const FT_BitmapGlyph ftBitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
 
     result.character = character;
-    result.glyphSize = glm::ivec2(ftBitmapGlyph->bitmap.width, ftBitmapGlyph->bitmap.rows);
+    result.width = static_cast<uint32_t>(ftBitmapGlyph->bitmap.width);
+    result.height = static_cast<uint32_t>(ftBitmapGlyph->bitmap.rows);
     result.glyphBearing = glm::ivec2(ftBitmapGlyph->left, ftBitmapGlyph->top);
     result.glyphAdvance = static_cast<uint32_t>(_face->glyph->advance.x >> 6);
     result.atlasType = AtlasType::bitmap;
@@ -203,12 +204,13 @@ bool FontRaster::rasterizeGlyphMSDF(Codepoint character, GlyphBitmap &result) {
     const size_t floatCount = glyphWidth * glyphHeight * 3;
 
     result.character = character;
-    result.glyphSize = glm::ivec2(_fontWidth, _fontHeight);
+    result.width = glyphWidth;
+    result.height = glyphHeight;
     result.glyphBearing = glm::ivec2(static_cast<int>(slot->metrics.horiBearingX >> 6),
                                      static_cast<int>(slot->metrics.horiBearingY >> 6));
     result.glyphAdvance = static_cast<uint32_t>(slot->metrics.horiAdvance >> 6);
     result.atlasType = AtlasType::msdf;
-    result.pixels.resize(_fontWidth * _fontHeight * 3 * sizeof(float));
+    result.pixels.resize(glyphWidth * glyphHeight * 3 * sizeof(float));
     std::memcpy(result.pixels.data(), static_cast<const float *>(msdf), result.pixels.size());
 
     return true;

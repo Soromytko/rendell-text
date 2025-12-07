@@ -23,12 +23,12 @@ size_t GlyphAtlasCache::getVersion() const {
 
 uint32_t GlyphAtlasCache::getGlyphWidth() const {
     assert(_fontRaster);
-    return _fontRaster->getGlyphWidth();
+    return _fontRaster->getFontWiidth();
 }
 
 uint32_t GlyphAtlasCache::getGlyphHeight() const {
     assert(_fontRaster);
-    return _fontRaster->getGlyphWidth();
+    return _fontRaster->getFontWiidth();
 }
 
 uint32_t GlyphAtlasCache::getAtlasCount() const {
@@ -37,7 +37,7 @@ uint32_t GlyphAtlasCache::getAtlasCount() const {
 
 uint32_t GlyphAtlasCache::getFontHeight() const {
     assert(_fontRaster);
-    return _fontRaster->getFontHeight();
+    return _fontRaster->getLineHeight();
 }
 
 uint32_t GlyphAtlasCache::getAscender() const {
@@ -77,19 +77,24 @@ const Glyph &GlyphAtlasCache::getOrRasterizeGlyph(Codepoint character) {
 
     IGlyphAtlas *atlas = getCurrentAtlas();
     assert(atlas);
-    assert(static_cast<uint32_t>(glyph.bitmap.glyphSize.x) <= atlas->getWidth());
-    assert(static_cast<uint32_t>(glyph.bitmap.glyphSize.y) <= atlas->getHeight());
+    assert(static_cast<uint32_t>(glyph.bitmap.width) <= atlas->getWidth());
+    assert(static_cast<uint32_t>(glyph.bitmap.height) <= atlas->getHeight());
 
-    IGlyphAtlas::GlyphInfo glyphInfo;
-    if (!atlas->tryInsert(glyph.bitmap, glyphInfo)) {
+    if (!atlas->tryInsert(glyph.bitmap, glyph.uv)) {
         atlas = addAtlas();
         assert(atlas);
-        if (!atlas->tryInsert(glyph.bitmap, glyphInfo)) {
+        if (!atlas->tryInsert(glyph.bitmap, glyph.uv)) {
             assert(false);
         }
     }
+    glyph.atlasIndex = getCurrentAtlasIndex();
     _version++;
     return glyph;
+}
+
+size_t GlyphAtlasCache::getCurrentAtlasIndex() const {
+    assert(_atlases.size() > 0);
+    return _atlases.size() - 1;
 }
 
 IGlyphAtlas *GlyphAtlasCache::addAtlas() {

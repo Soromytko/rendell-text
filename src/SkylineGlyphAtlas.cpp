@@ -1,5 +1,7 @@
 #include <SkylineGlyphAtlas.h>
 
+#include <algorithm>
+
 namespace rendell_text {
 SkylineGlyphAtlas::SkylineGlyphAtlas(uint32_t width, uint32_t height)
     : _width(width)
@@ -26,24 +28,25 @@ const std::vector<rendell::byte_t> &SkylineGlyphAtlas::getPixels() const {
     return _pixels;
 }
 
-bool SkylineGlyphAtlas::tryInsert(const GlyphBitmap &glyph, GlyphInfo &glyphInfo) {
+bool SkylineGlyphAtlas::tryInsert(const GlyphBitmap &glyph, UV &uv) {
     if (glyph.width > _width || glyph.height > _height) {
         return false;
     }
 
-    const auto bestNodeIndex = findBestNodeIndex(glyph);
+    uint32_t yOffset;
+    const auto bestNodeIndex = findBestNodeIndex(glyph, yOffset);
     if (bestNodeIndex < 0) {
         return false;
     }
     assert(bestNodeIndex < _skyline.size());
 
-    insertGlyph(glyph, static_cast<uint32_t>(bestNodeIndex));
-    addSkylineSegment(bestNodeIndex, glyph.width, glyph.height);
+    insertGlyph(glyph, static_cast<uint32_t>(bestNodeIndex), uv);
+    addSkylineSegment(bestNodeIndex, glyph.width, glyph.height, yOffset);
     _version++;
     return true;
 }
 
-int SkylineGlyphAtlas::findBestNodeIndex(const GlyphBitmap &glyph) const {
+int SkylineGlyphAtlas::findBestNodeIndex(const GlyphBitmap &glyph, uint32_t &yOffset) const {
     // At least one Node.
     assert(_skyline.size() > 0);
 
@@ -51,33 +54,21 @@ int SkylineGlyphAtlas::findBestNodeIndex(const GlyphBitmap &glyph) const {
 
     for (size_t i = 0; i < _skyline.size(); i++) {
         const SkylineNode node = _skyline[i];
-        if (node.y + glyph.height > _height) {
+        uint32_t maxY = node.y + glyph.height;
+        uint32_t width = node.width;
+        for (size_t j = i; j < _skyline.size() && width < glyph.width; j++) {
+            const SkylineNode rightNode = _skyline[j];
+            width += rightNode.width;
+            maxY = std::max(maxY, rightNode.y + glyph.height);
+        }
+
+        if (width < glyph.width || maxY > _height) {
             continue;
         }
 
-        if (node.x + glyph.width < node.width) {
-            bestNodeIndex = i;
-            continue;
-        }
-        bool isEnough = false;
-        for (size_t j = i + 1; j < _skyline.size(); j++) {
-            const SkylineNode node2 = _skyline[j];
-            if (node.x + glyph.width < node2.x) {
-                isEnough = true;
-                break;
-            }
-            if (node2.y > node.y) {
-                if (node.x + glyph.width > node2.x) {
-                    isEnough = false;
-                    break;
-                }
-            }
-        }
-        if (!isEnough) {
-            continue;
-        }
         assert(bestNodeIndex < _skyline.size());
-        if (bestNodeIndex < 0 || node.y < _skyline[bestNodeIndex].y) {
+        if (bestNodeIndex < 0 || node.y < _skyline[static_cast<uint32_t>(bestNodeIndex)].y) {
+            yOffset = maxY - node.y;
             bestNodeIndex = i;
         }
     }
@@ -85,7 +76,7 @@ int SkylineGlyphAtlas::findBestNodeIndex(const GlyphBitmap &glyph) const {
     return bestNodeIndex;
 }
 
-void SkylineGlyphAtlas::insertGlyph(const GlyphBitmap &glyph, size_t nodeInsertIndex) {
+void SkylineGlyphAtlas::insertGlyph(const GlyphBitmap &glyph, size_t nodeInsertIndex, UV &uv) {
     assert(nodeInsertIndex < _skyline.size());
 
     const SkylineNode bestNode = _skyline[nodeInsertIndex];
@@ -98,49 +89,42 @@ void SkylineGlyphAtlas::insertGlyph(const GlyphBitmap &glyph, size_t nodeInsertI
         memcpy(&_pixels[atlasIndex], &glyph.pixels[glyphIndex], glyph.width);
     }
 
-    const SkylineNode insertNode = _skyline[nodeInsertIndex];
-    _skyline[nodeInsertIndex].y += glyph.height;
-    if (nodeInsertIndex > 0 && _skyline[nodeInsertIndex].y == _skyline[nodeInsertIndex - 1].y) {
-        _skyline.erase(_skyline.begin() + nodeInsertIndex);
-        nodeInsertIndex--;
-    }
-    if (insertNode.x + glyph.width < insertNode.width) {
-        auto it = _skyline.insert(_skyline.begin() + nodeInsertIndex, insertNode);
-        it->x += glyph.width;
-        it->width = insertNode.width - glyph.width;
-    } else {
-        const uint32_t newX = insertNode.x + glyph.width;
-        if (nodeInsertIndex + 1 == _skyline.size()) {
-            _skyline.insert(_skyline.begin() + nodeInsertIndex + 1,
-                            {insertNode.x + glyph.width, insertNode.y, _width - insertNode.x});
+    uv.u0 = bestNode.x / _width;
+    uv.v0 = bestNode.y / _height;
+    uv.u1 = (bestNode.x + glyph.width) / _width;
+    uv.v1 = (bestNode.y + glyph.height) / _height;
+}
+
+void SkylineGlyphAtlas::addSkylineSegment(size_t index, uint32_t width, uint32_t height,
+                                          uint32_t yOffset) {
+    assert(index < _skyline.size());
+    assert(width > 0);
+    assert(height > 0);
+
+    _skyline[index].y += height + yOffset;
+    const SkylineNode newNode{_skyline[index].x + width + yOffset, _skyline[index].y};
+    _skyline.insert(_skyline.begin() + index + 1, newNode);
+
+    for (auto it = _skyline.begin() + index + 2; it < _skyline.end(); it++) {
+        if (it->x < newNode.x) {
+            _skyline[index].y = it->y;
+            it = _skyline.erase(it);
         } else {
-            for (auto it = _skyline.begin() + nodeInsertIndex + 1; it != _skyline.end(); it++) {
-                if (it->x == newX) {
+            break;
+        }
+    }
+
+    if (_skyline.size() > 0) {
+        for (size_t i = 0; i < _skyline.size() - 1; i++) {
+            for (size_t j = i + 1; j < _skyline.size(); j++) {
+                if (_skyline[i].x == _skyline[j].x || _skyline[i].y == _skyline[j].y) {
+                    _skyline.erase(_skyline.begin() + j);
+                    j--;
+                } else {
                     break;
-                }
-                if (it->x < newX) {
-                    it = _skyline.erase(it);
-                } else if (it->x > newX) {
-                    _skyline.insert(_skyline.begin() + nodeInsertIndex + 1,
-                                    {newX, insertNode.y, it->x - newX});
                 }
             }
         }
     }
-
-    SkylineNode newPoint = _skyline[nodeInsertIndex];
-    newPoint.x += glyph.width;
-    _skyline.insert(_skyline.begin() + nodeInsertIndex + 1, newPoint);
-
-    _skyline[nodeInsertIndex].y += glyph.height;
-    if (_skyline[nodeInsertIndex - 1].y == _skyline[nodeInsertIndex].y) {
-        _skyline.erase(_skyline.begin() + nodeInsertIndex);
-    }
-
-    _skyline.insert(_skyline.begin() + nodeInsertIndex + 1, {});
-}
-
-void SkylineGlyphAtlas::addSkylineSegment(size_t index, uint32_t x, uint32_t y, uint32_t width,
-                                          uint32_t height) {
 }
 } // namespace rendell_text

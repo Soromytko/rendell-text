@@ -130,7 +130,7 @@ void TextLayout::appendText(const std::u32string &text) {
 
 static glm::vec2 getInstanceLocalOffset(const GlyphBitmap &glyphBitmap) {
     const glm::vec2 bearing = glyphBitmap.glyphBearing;
-    const glm::vec2 size = glyphBitmap.glyphSize;
+    const glm::vec2 size = {glyphBitmap.width, glyphBitmap.height};
     return glm::vec2(bearing.x, bearing.y - size.y);
 }
 
@@ -158,8 +158,7 @@ void TextLayout::updateBuffers(size_t startFrom) {
 
         if (currentCharacter != ' ' && currentCharacter != '\t') {
             const glm::vec2 glyphOffset = currentOffset + getInstanceLocalOffset(glyph.bitmap);
-            _transforms[i] =
-                glm::vec4(glyphOffset, glyph.bitmap.glyphSize.x, glyph.bitmap.glyphSize.y);
+            _transforms[i] = glm::vec4(glyphOffset, glyph.bitmap.width, glyph.bitmap.height);
         }
 
         currentOffset.x += (glyph.bitmap.glyphAdvance >> 6);

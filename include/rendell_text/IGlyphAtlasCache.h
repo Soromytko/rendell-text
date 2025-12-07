@@ -7,7 +7,8 @@
 namespace rendell_text {
 struct Glyph final {
     GlyphBitmap bitmap{};
-    IGlyphAtlas::GlyphInfo atlasInfo{};
+    size_t atlasIndex{};
+    IGlyphAtlas::UV uv{};
 };
 } // namespace rendell_text
 

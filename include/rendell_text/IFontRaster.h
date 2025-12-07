@@ -13,9 +13,9 @@ public:
     virtual ~IFontRaster() = default;
 
     virtual const std::filesystem::path &getFontPath() const = 0;
-    virtual uint32_t getGlyphWidth() const = 0;
+    virtual uint32_t getFontWiidth() const = 0;
     virtual uint32_t getGlyphHeight() const = 0;
-    virtual uint32_t getFontHeight() const = 0;
+    virtual uint32_t getLineHeight() const = 0;
     virtual int getAscender() const = 0;
     virtual int getDescender() const = 0;
 

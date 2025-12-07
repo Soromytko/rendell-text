@@ -26,6 +26,7 @@ public:
     const Glyph &getOrRasterizeGlyph(Codepoint character) override;
 
 private:
+    size_t getCurrentAtlasIndex() const;
     IGlyphAtlas *addAtlas();
     IGlyphAtlas *getCurrentAtlas() const;
 
