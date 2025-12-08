@@ -1,7 +1,6 @@
 #pragma once
 #pragma once
 #include <rendell/oop/Texture2DArray.h>
-#include <rendell/rendell.h>
 #include <rendell_text/IGlyphAtlasCache.h>
 
 #include <memory>

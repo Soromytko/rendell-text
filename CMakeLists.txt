@@ -23,8 +23,8 @@ set(SOURCES
 )
 
 set(HEADERS
+    include/rendell_text/types.h
     include/rendell_text/initialization.h
-    include/rendell_text/rendell_text.h
     include/rendell_text/factory.h
     include/rendell_text/IFontRaster.h
     include/rendell_text/GlyphBitmap.h

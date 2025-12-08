@@ -1,4 +1,6 @@
 #pragma once
+#include "types.h"
+
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -9,8 +11,6 @@ enum class AtlasType {
     msdf,
     mtsdf,
 };
-
-using Codepoint = char32_t;
 
 struct GlyphBitmap {
     Codepoint character{};

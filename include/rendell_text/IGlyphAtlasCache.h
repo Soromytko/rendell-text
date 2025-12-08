@@ -22,7 +22,7 @@ public:
     virtual uint32_t getGlyphWidth() const = 0;
     virtual uint32_t getGlyphHeight() const = 0;
     virtual uint32_t getAtlasCount() const = 0;
-    virtual uint32_t getFontHeight() const = 0;
+    virtual uint32_t getLineHeight() const = 0;
     virtual uint32_t getAscender() const = 0;
     virtual uint32_t getDescender() const = 0;
     virtual std::vector<size_t> getAtlasVersions() const = 0;

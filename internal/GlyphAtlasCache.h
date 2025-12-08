@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <rendell_text/IGlyphAtlasCache.h>
 
 #include <memory>
@@ -17,7 +16,7 @@ public:
     uint32_t getGlyphWidth() const override;
     uint32_t getGlyphHeight() const override;
     uint32_t getAtlasCount() const override;
-    uint32_t getFontHeight() const override;
+    uint32_t getLineHeight() const override;
     uint32_t getAscender() const override;
     uint32_t getDescender() const override;
     std::vector<size_t> getAtlasVersions() const override;

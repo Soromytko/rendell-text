@@ -29,7 +29,7 @@ std::shared_ptr<IGlyphAtlasCache> TextLayout::getGlyphAtlasCache() const {
     return _glyphAtlasCache;
 }
 
-const std::u32string &TextLayout::getText() const {
+const rendell_text::String &TextLayout::getText() const {
     return _text;
 }
 
@@ -39,7 +39,7 @@ size_t TextLayout::getTextLength() const {
 
 uint32_t TextLayout::getHeight() const {
     assert(_glyphAtlasCache);
-    return static_cast<uint32_t>(_glyphAtlasCache->getFontHeight());
+    return static_cast<uint32_t>(_glyphAtlasCache->getLineHeight());
 }
 
 uint32_t TextLayout::getAscender() const {
@@ -74,9 +74,9 @@ std::pair<const rendell::byte_t *, size_t> TextLayout::getUVs() const {
     return {bytes, size};
 }
 
-std::u32string TextLayout::getSubText(size_t indexFrom) const {
+rendell_text::String TextLayout::getSubText(size_t indexFrom) const {
     assert(indexFrom < _text.length());
-    return std::u32string(_text.begin() + indexFrom, _text.end());
+    return rendell_text::String(_text.begin() + indexFrom, _text.end());
 }
 
 void TextLayout::setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
@@ -87,12 +87,12 @@ void TextLayout::setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlas
     }
 }
 
-void TextLayout::setText(const std::u32string &value) {
-    std::u32string text = value;
+void TextLayout::setText(const rendell_text::String &value) {
+    rendell_text::String text = value;
     setText(std::move(text));
 }
 
-void TextLayout::setText(std::u32string &&value) {
+void TextLayout::setText(rendell_text::String &&value) {
     if (_text != value) {
         _text = std::move(value);
         updateBuffers();
@@ -112,14 +112,14 @@ void TextLayout::eraseText(size_t startIndex, size_t count) {
     _version++;
 }
 
-void TextLayout::insertText(const std::u32string &text, size_t startIndex) {
+void TextLayout::insertText(const rendell_text::String &text, size_t startIndex) {
     assert(startIndex >= 0 && startIndex <= _text.length());
     _text.insert(startIndex, text);
     updateBuffers(startIndex);
     _version++;
 }
 
-void TextLayout::appendText(const std::u32string &text) {
+void TextLayout::appendText(const rendell_text::String &text) {
     if (!text.empty()) {
         const size_t updatedTextLenght = text.length();
         _text += text;
@@ -150,7 +150,7 @@ void TextLayout::updateBuffers(size_t startFrom) {
 
         if (currentCharacter == '\n') {
             currentOffset.x = 0.0f;
-            currentOffset.y += static_cast<float>(_glyphAtlasCache->getFontHeight());
+            currentOffset.y += static_cast<float>(_glyphAtlasCache->getLineHeight());
             continue;
         }
 

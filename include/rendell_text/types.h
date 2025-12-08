@@ -1,0 +1,7 @@
+#pragma once
+#include <string>
+
+namespace rendell_text {
+using Codepoint = char32_t;
+using String = std::u32string;
+} // namespace rendell_text

@@ -35,7 +35,7 @@ uint32_t GlyphAtlasCache::getAtlasCount() const {
     return static_cast<uint32_t>(_atlases.size());
 }
 
-uint32_t GlyphAtlasCache::getFontHeight() const {
+uint32_t GlyphAtlasCache::getLineHeight() const {
     assert(_fontRaster);
     return _fontRaster->getLineHeight();
 }
