@@ -1,18 +1,19 @@
 #pragma once
-#pragma once
 #include <rendell/oop/Texture2DArray.h>
-#include <rendell_text/IGlyphAtlasCache.h>
+#include <rendell_text/IGlyphAtlasTexture.h>
 
 #include <memory>
 
 namespace rendell_text {
-class GlyphAtlasTexture final {
+class IGlyphAtlasCache;
+
+class GlyphAtlasTexture final : public IGlyphAtlasTexture {
 public:
     GlyphAtlasTexture(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache);
     ~GlyphAtlasTexture() = default;
 
-    void prepare();
-    void use(rendell::UniformSampler2DId uniformId, uint32_t stage);
+    void prepare() override;
+    void use(rendell::UniformSampler2DId uniformId, uint32_t stage) override;
 
 private:
     void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache);

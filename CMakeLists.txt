@@ -19,13 +19,14 @@ set(SOURCES
     src/TextBuffer.cpp
     src/FontRaster.cpp
     src/GlyphAtlasTexture.cpp
-    src/GlyphAtlasTextureStorage.cpp
 )
 
 set(HEADERS
     include/rendell_text/types.h
     include/rendell_text/initialization.h
     include/rendell_text/factory.h
+    include/rendell_text/ITextBuffer.h
+    include/rendell_text/IGlyphAtlasTexture.h
     include/rendell_text/IFontRaster.h
     include/rendell_text/GlyphBitmap.h
     include/rendell_text/IGlyphAtlas.h
@@ -40,7 +41,6 @@ set(HEADERS
     internal/TextBuffer.h
     internal/GlyphAtlasCache.h
     internal/GlyphAtlasTexture.h
-    internal/GlyphAtlasTextureStorage.h
 
     src/FontRaster.h
     src/freetype.h

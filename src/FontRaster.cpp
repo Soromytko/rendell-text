@@ -201,17 +201,15 @@ bool FontRaster::rasterizeGlyphMSDF(Codepoint character, GlyphBitmap &result) {
     }
     FT_GlyphSlot slot = _face->glyph;
 
-    const size_t floatCount = glyphWidth * glyphHeight * 3;
-
     result.character = character;
-    result.width = glyphWidth;
-    result.height = glyphHeight;
+    result.width = static_cast<uint32_t>(slot->metrics.width >> 6);
+    result.height = static_cast<uint32_t>(slot->metrics.height >> 6);
     result.glyphBearing = glm::ivec2(static_cast<int>(slot->metrics.horiBearingX >> 6),
                                      static_cast<int>(slot->metrics.horiBearingY >> 6));
     result.glyphAdvance = static_cast<uint32_t>(slot->metrics.horiAdvance >> 6);
     result.atlasType = AtlasType::msdf;
     result.pixels.resize(glyphWidth * glyphHeight * 3 * sizeof(float));
-    std::memcpy(result.pixels.data(), static_cast<const float *>(msdf), result.pixels.size());
+    std::memcpy(result.pixels.data(), msdf(0, 0), sizeof(float) * glyphWidth * glyphHeight * 3);
 
     return true;
 }

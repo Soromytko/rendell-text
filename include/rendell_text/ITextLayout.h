@@ -3,7 +3,6 @@
 #include <rendell/DataType.h>
 
 #include <memory>
-#include <string>
 #include <utility>
 
 namespace rendell_text {

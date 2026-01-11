@@ -5,7 +5,7 @@
 
 namespace rendell_text {
 bool init() {
-    if (!TextRenderer::initStaticStuff()) {
+    if (!TextRenderer::initBasicRenderResources()) {
         RT_CRITICAL("TextRenderer initialization failure");
         return false;
     }
@@ -13,6 +13,6 @@ bool init() {
 }
 
 void release() {
-    TextRenderer::releaseStaticStuff();
+    TextRenderer::releaseBasicRenderResources();
 }
 } // namespace rendell_text

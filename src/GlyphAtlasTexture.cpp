@@ -1,5 +1,8 @@
 #include <GlyphAtlasTexture.h>
 
+#include <rendell/ResourceValidation.h>
+#include <rendell_text/IGlyphAtlasCache.h>
+
 #include <cassert>
 
 namespace rendell_text {

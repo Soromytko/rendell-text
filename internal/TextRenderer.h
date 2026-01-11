@@ -4,39 +4,31 @@
 #include <memory>
 
 namespace rendell_text {
-class TextBuffer;
-class IGlyphAtlasCache;
-class GlyphAtlasTexture;
-} // namespace rendell_text
-
-namespace rendell_text {
 class TextRenderer final : public ITextRenderer {
 public:
-    static bool initStaticStuff();
-    static void releaseStaticStuff();
+    static bool initBasicRenderResources();
+    static void releaseBasicRenderResources();
 
-    TextRenderer(std::shared_ptr<ITextLayout> textLayout);
+    TextRenderer(std::shared_ptr<ITextBuffer> textBuffer,
+                 std::shared_ptr<IGlyphAtlasTexture> atlasTexture);
     ~TextRenderer() = default;
 
-    std::shared_ptr<ITextLayout> getTextLayout() const override;
+    std::shared_ptr<ITextBuffer> getTextBuffer() const override;
+    std::shared_ptr<IGlyphAtlasTexture> getGlyphAtlasTexture() const override;
     const glm::vec4 &getColor() const override;
 
+    void setTextBuffer(std::shared_ptr<ITextBuffer> textBuffer) override;
+    void setGlyphAtlasTexture(std::shared_ptr<IGlyphAtlasTexture> atlasTexture) override;
     void setMatrix(const glm::mat4 &matrix) override;
     void setColor(const glm::vec4 &color) override;
     void setBackgroundColor(const glm::vec4 backgroundColor) override;
 
-    void prepare();
+    void prepare() override;
     void draw() override;
 
 private:
-    void setTextLayout(std::shared_ptr<ITextLayout> textLayout);
-
-    std::shared_ptr<IGlyphAtlasCache> _glyphAtlasCache{};
-    std::shared_ptr<ITextLayout> _newTextLayout{};
-    std::shared_ptr<TextBuffer> _textBuffer{};
-    ITextLayout *_textLayout{};
-
-    std::shared_ptr<GlyphAtlasTexture> _atlasTextures{};
+    std::shared_ptr<ITextBuffer> _textBuffer{};
+    std::shared_ptr<IGlyphAtlasTexture> _atlasTexture{};
 
     glm::mat4 _matrix{};
     glm::vec4 _color{};

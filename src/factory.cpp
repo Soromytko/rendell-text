@@ -2,13 +2,14 @@
 
 #include "FontRaster.h"
 #include <GlyphAtlasCache.h>
+#include <GlyphAtlasTexture.h>
+#include <TextBuffer.h>
 #include <TextLayout.h>
 #include <TextRenderer.h>
 
 namespace rendell_text {
 std::shared_ptr<IFontRaster> createFontRaster() {
-    std::shared_ptr<FontRaster> result = std::make_shared<FontRaster>();
-    return result;
+    return std::make_shared<FontRaster>();
 }
 
 std::shared_ptr<IGlyphAtlasCache> createGlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster,
@@ -22,8 +23,22 @@ std::shared_ptr<ITextLayout> createTextLayout(std::shared_ptr<IGlyphAtlasCache> 
     return std::make_shared<TextLayout>(glyphAtlasCache);
 }
 
-std::shared_ptr<ITextRenderer> createTextRenderer(std::shared_ptr<ITextLayout> textLayout) {
+std::shared_ptr<ITextBuffer> createTextBuffer(std::shared_ptr<ITextLayout> textLayout) {
     assert(textLayout);
-    return std::make_shared<TextRenderer>(textLayout);
+    return std::make_shared<TextBuffer>(textLayout);
+}
+
+std::shared_ptr<IGlyphAtlasTexture>
+createGlyphAtlasTexture(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) {
+    assert(glyphAtlasCache);
+    return std::make_shared<GlyphAtlasTexture>(glyphAtlasCache);
+}
+
+std::shared_ptr<ITextRenderer>
+createTextRenderer(std::shared_ptr<ITextBuffer> textBuffer,
+                   std::shared_ptr<IGlyphAtlasTexture> atlasTexture) {
+    assert(textBuffer);
+    assert(atlasTexture);
+    return std::make_shared<TextRenderer>(textBuffer, atlasTexture);
 }
 } // namespace rendell_text

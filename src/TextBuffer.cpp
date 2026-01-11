@@ -8,11 +8,16 @@
 #define SHADER_BUFFER_SECTION_SIZE 100
 
 namespace rendell_text {
-TextBuffer::TextBuffer(std::shared_ptr<ITextLayout> textLayout) {
-    assert(textLayout);
-    _buffers.transformUnitSize = textLayout->getTransformUnitSize();
-    _buffers.uvUnitSize = textLayout->getUVUnitSize();
-    setTextLayout(textLayout);
+TextBuffer::TextBuffer(size_t transformUnitSize, size_t uvUnitSize, size_t count = 1024)
+    : _count(count) {
+    assert(_count > 0);
+    _transformShaderBuffer =
+        std::make_unique<rendell::oop::ShaderBuffer>(_count * transformUnitSize);
+    _uvShaderBuffer = std::make_unique<rendell::oop::ShaderBuffer>(_count * uvUnitSize);
+
+    //_buffers.transformUnitSize = textLayout->getTransformUnitSize();
+    //_buffers.uvUnitSize = textLayout->getUVUnitSize();
+    // setTextLayout(textLayout);
 }
 
 bool TextBuffer::isEmtpy() const {
@@ -30,6 +35,20 @@ void TextBuffer::setTextLayout(std::shared_ptr<ITextLayout> textLayout) {
         _textLayout = textLayout;
         _needsFullUpdate = true;
     }
+}
+
+size_t TextBuffer::update(ITextLayout &textLayout, size_t offset) {
+    const size_t buffersOffset;
+    assert(offset <= _count);
+    if (_count == offset) {
+        return textLayout.getTextLength();
+    }
+
+    auto [transformsBytes, transformSize] = textLayout.getTransforms(buffersOffset);
+    auto [uvBytes, uvSize] = textLayout.getUVs(buffersOffset);
+
+    _transformShaderBuffer->setSubData(transformsBytes, transformSize, buffersOffset);
+    _uvShaderBuffer->setSubData(uvBytes, uvSize, buffersOffset);
 }
 
 void TextBuffer::prepare() {

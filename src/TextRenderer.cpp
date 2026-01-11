@@ -1,13 +1,11 @@
 #include <TextRenderer.h>
 
-#include <GlyphAtlasTexture.h>
-#include <TextBuffer.h>
 #include <rendell/oop/rendell_oop.h>
-#include <rendell_text/ITextLayout.h>
+#include <rendell_text/IGlyphAtlasTexture.h>
+#include <rendell_text/ITextBuffer.h>
 
 #include "res_Shaders_TextRenderer_fs.h"
 #include "res_Shaders_TextRenderer_vs.h"
-#include <GlyphAtlasTextureStorage.h>
 #include <logging.h>
 
 #include <cassert>
@@ -19,32 +17,34 @@
 #define GLYPH_UV_BUFFER_BINDING 1
 
 namespace rendell_text {
-static rendell::oop::VertexAssemblySharedPtr s_vertexAssembly;
-static rendell::oop::ShaderProgramSharedPtr s_shaderProgram;
-static std::unique_ptr<rendell::oop::Mat4Uniform> s_matrixUniform{nullptr};
-static std::unique_ptr<rendell::oop::Float2Uniform> s_fontSizeUniform{nullptr};
-static std::unique_ptr<rendell::oop::Float4Uniform> s_textColorUniform{nullptr};
-static std::unique_ptr<rendell::oop::Float4Uniform> s_backgroundColorUniform{nullptr};
-static std::unique_ptr<rendell::oop::Int1Uniform> s_charFromUniformUniform{nullptr};
-static std::unique_ptr<rendell::oop::Sampler2DUniform> s_texturesUniform{nullptr};
+struct BasicRenderResources final {
+    rendell::oop::VertexAssembly vertexAssembly;
+    rendell::oop::ShaderProgram shaderProgram;
+    rendell::oop::Mat4Uniform matrixUniform;
+    rendell::oop::Float4Uniform textColorUniform;
+    rendell::oop::Float4Uniform backgroundColorUniform;
+    rendell::oop::Int1Uniform charFromUniformUniform;
+    rendell::oop::Sampler2DUniform texturesUniform;
+};
 
-static rendell::oop::VertexAssemblySharedPtr createVertexAssembly() {
-    static std::vector<float> vertexPos{
+static std::unique_ptr<BasicRenderResources> s_basicRenderResources{nullptr};
+
+static rendell::oop::VertexAssembly createVertexAssembly() {
+    static const std::vector<float> vertexPos{
         0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
     };
-    static std::vector<uint32_t> indices{0, 0, 0, 0};
+    static const std::vector<uint32_t> indices{0, 0, 0, 0};
 
     auto indexBuffer = rendell::oop::makeIndexBuffer(indices.data(), indices.size());
     auto vertexBuffer = rendell::oop::makeVertexBuffer(vertexPos.data(), vertexPos.size());
     auto vertexLayout =
         rendell::VertexLayout().addAttribute(0, rendell::ShaderDataType::float2, false, 0);
-    auto vertexAssembly = rendell::oop::makeVertexAssembly(indexBuffer, std::vector{vertexBuffer},
-                                                           std::vector{vertexLayout});
-    return vertexAssembly;
+    return rendell::oop::VertexAssembly(indexBuffer, std::vector{vertexBuffer},
+                                        std::vector{vertexLayout});
 }
 
-static rendell::oop::ShaderProgramSharedPtr createShaderProgram(const std::string &vertexSrc,
-                                                                const std::string &fragmentSrc) {
+static rendell::oop::ShaderProgram createShaderProgram(const std::string &vertexSrc,
+                                                       const std::string &fragmentSrc) {
     auto vertexShader =
         rendell::oop::makeVertexShader(vertexSrc, [](bool success, const std::string &infoLog) {
             if (!infoLog.empty()) {
@@ -69,7 +69,7 @@ static rendell::oop::ShaderProgramSharedPtr createShaderProgram(const std::strin
             assert(success);
         });
 
-    auto program = rendell::oop::makeShaderProgram(
+    auto program = rendell::oop::ShaderProgram(
         vertexShader, fragmentShader, [](bool success, const std::string &infoLog) {
             if (!infoLog.empty()) {
                 if (success) {
@@ -91,58 +91,59 @@ static bool loadShaders(std::string &vertSrcResult, std::string &fragSrcResult) 
     return true;
 }
 
-bool TextRenderer::initStaticStuff() {
-    s_vertexAssembly = createVertexAssembly();
-    assert(s_vertexAssembly);
-
+bool TextRenderer::initBasicRenderResources() {
     std::string vertexSrc, fragmentSrc;
     if (!loadShaders(vertexSrc, fragmentSrc)) {
         RT_ERROR("Shader loading failed");
         return false;
     }
 
-    s_shaderProgram = createShaderProgram(vertexSrc, fragmentSrc);
-    assert(s_shaderProgram);
-
-    s_matrixUniform = std::make_unique<rendell::oop::Mat4Uniform>("u_Matrix");
-    s_fontSizeUniform = std::make_unique<rendell::oop::Float2Uniform>("u_FontSize");
-    s_textColorUniform = std::make_unique<rendell::oop::Float4Uniform>("u_TextColor");
-    s_backgroundColorUniform = std::make_unique<rendell::oop::Float4Uniform>("u_BackgroundColor");
-    s_charFromUniformUniform = std::make_unique<rendell::oop::Int1Uniform>("u_CharFrom");
-    s_texturesUniform = std::make_unique<rendell::oop::Sampler2DUniform>("u_Textures");
+    s_basicRenderResources = std::make_unique<BasicRenderResources>(BasicRenderResources{
+        .vertexAssembly = createVertexAssembly(),
+        .shaderProgram = createShaderProgram(vertexSrc, fragmentSrc),
+        .matrixUniform = rendell::oop::Mat4Uniform("u_Matrix"),
+        .textColorUniform = rendell::oop::Float4Uniform("u_TextColor"),
+        .backgroundColorUniform = rendell::oop::Float4Uniform("u_BackgroundColor"),
+        .charFromUniformUniform = rendell::oop::Int1Uniform("u_CharFrom"),
+        .texturesUniform = rendell::oop::Sampler2DUniform("u_Textures"),
+    });
 
     return true;
 }
 
-void TextRenderer::releaseStaticStuff() {
-    s_vertexAssembly.reset();
-    s_shaderProgram.reset();
-    s_matrixUniform.reset();
-    s_fontSizeUniform.reset();
-    s_textColorUniform.reset();
-    s_backgroundColorUniform.reset();
-    s_charFromUniformUniform.reset();
-    s_texturesUniform.reset();
+void TextRenderer::releaseBasicRenderResources() {
+    s_basicRenderResources.reset();
 }
 
-TextRenderer::TextRenderer(std::shared_ptr<ITextLayout> textLayout) {
-    assert(textLayout);
-    setTextLayout(textLayout);
+TextRenderer::TextRenderer(std::shared_ptr<ITextBuffer> textBuffer,
+                           std::shared_ptr<IGlyphAtlasTexture> atlasTexture) {
+    assert(s_basicRenderResources);
+    assert(textBuffer);
+    assert(atlasTexture);
 }
 
-std::shared_ptr<ITextLayout> TextRenderer::getTextLayout() const {
-    return _newTextLayout;
+std::shared_ptr<ITextBuffer> TextRenderer::getTextBuffer() const {
+    assert(_textBuffer);
+    return _textBuffer;
+}
+
+std::shared_ptr<IGlyphAtlasTexture> TextRenderer::getGlyphAtlasTexture() const {
+    assert(_atlasTexture);
+    return _atlasTexture;
 }
 
 const glm::vec4 &TextRenderer::getColor() const {
     return _color;
 }
 
-void TextRenderer::setTextLayout(std::shared_ptr<ITextLayout> textLayout) {
-    assert(textLayout);
-    if (_newTextLayout != textLayout) {
-        _newTextLayout = textLayout;
-    }
+void TextRenderer::setTextBuffer(std::shared_ptr<ITextBuffer> textBuffer) {
+    assert(textBuffer);
+    _textBuffer = textBuffer;
+}
+
+void TextRenderer::setGlyphAtlasTexture(std::shared_ptr<IGlyphAtlasTexture> atlasTexture) {
+    assert(atlasTexture);
+    _atlasTexture = atlasTexture;
 }
 
 void TextRenderer::setMatrix(const glm::mat4 &matrix) {
@@ -158,51 +159,33 @@ void TextRenderer::setBackgroundColor(const glm::vec4 backgroundColor) {
 }
 
 void TextRenderer::prepare() {
-    assert(_textLayout);
     assert(_textBuffer);
-    assert(_newTextLayout);
-
-    if (_textLayout != _newTextLayout.get()) {
-        _textLayout = _newTextLayout.get();
-        _textBuffer = std::make_shared<TextBuffer>(_newTextLayout);
-    }
-
-    auto glyphAtlasCache = _textLayout->getGlyphAtlasCache();
-    assert(glyphAtlasCache);
-    if (_glyphAtlasCache != glyphAtlasCache) {
-        _glyphAtlasCache = glyphAtlasCache;
-        _atlasTextures =
-            GlyphAtlasTextureStorage::getInstance()->getOrCreateAtlasTexture(_glyphAtlasCache);
-        assert(_atlasTextures);
-    }
-    assert(_atlasTextures);
+    assert(_atlasTexture);
 
     _textBuffer->prepare();
-    _atlasTextures->prepare();
+    _atlasTexture->prepare();
 }
 
 void TextRenderer::draw() {
-    assert(_textLayout);
-    assert(_atlasTextures);
+    assert(s_basicRenderResources);
+    assert(_atlasTexture);
     assert(_textBuffer);
 
     prepare();
 
-    if (_textLayout->isEmpty() == 0) {
+    if (_textBuffer->isEmtpy()) {
         return;
     }
 
-    s_shaderProgram->use();
-    s_vertexAssembly->use();
+    s_basicRenderResources->shaderProgram.use();
+    s_basicRenderResources->vertexAssembly.use();
     _textBuffer->use(GLYPH_TRANSFORM_BUFFER_BINDING, GLYPH_UV_BUFFER_BINDING);
-    _atlasTextures->use(s_texturesUniform->getId(), TEXTURE_ARRAY_BLOCK);
+    _atlasTexture->use(s_basicRenderResources->texturesUniform.getId(), TEXTURE_ARRAY_BLOCK);
 
-    s_matrixUniform->set(glm::value_ptr(_matrix));
-    s_fontSizeUniform->set(static_cast<float>(_glyphAtlasCache->getGlyphWidth()),
-                           static_cast<float>(_glyphAtlasCache->getGlyphHeight()));
-    s_textColorUniform->set(_color.r, _color.g, _color.b, _color.a);
-    s_backgroundColorUniform->set(_backgroundColor.r, _backgroundColor.g, _backgroundColor.b,
-                                  _backgroundColor.a);
+    s_basicRenderResources->matrixUniform.set(glm::value_ptr(_matrix));
+    s_basicRenderResources->textColorUniform.set(_color.r, _color.g, _color.b, _color.a);
+    s_basicRenderResources->backgroundColorUniform.set(_backgroundColor.r, _backgroundColor.g,
+                                                       _backgroundColor.b, _backgroundColor.a);
 
     rendell::setDrawType(rendell::DrawMode::ArraysInstanced,
                          rendell::PrimitiveTopology::TriangleStrip,
