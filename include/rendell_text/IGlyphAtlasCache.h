@@ -1,16 +1,9 @@
 #pragma once
+#include "Glyph.h"
 #include <rendell_text/GlyphBitmap.h>
 #include <rendell_text/IGlyphAtlas.h>
 
 #include <memory>
-
-namespace rendell_text {
-struct Glyph final {
-    GlyphBitmap bitmap{};
-    size_t atlasIndex{};
-    IGlyphAtlas::UV uv{};
-};
-} // namespace rendell_text
 
 namespace rendell_text {
 class IGlyphAtlasCache {

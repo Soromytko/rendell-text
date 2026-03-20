@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <rendell_text/IFontRaster.h>
 
 #include <rendell/oop/raii.h>

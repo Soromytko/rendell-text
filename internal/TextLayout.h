@@ -1,35 +1,30 @@
 #pragma once
 #include <rendell_text/ITextLayout.h>
+#include <rendell_text/ITextModel.h>
 
 #include <glm/glm.hpp>
 #include <vector>
 
 namespace rendell_text {
+class ITextModel;
+
 class TextLayout final : public ITextLayout {
 public:
-    TextLayout(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache);
+    TextLayout(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache,
+               std::shared_ptr<ITextModel> textModel);
     ~TextLayout() = default;
 
     bool isEmpty() const override;
 
     size_t getVersion() const override;
-    std::shared_ptr<IGlyphAtlasCache> getGlyphAtlasCache() const override;
-    const rendell_text::String &getText() const override;
-    size_t getTextLength() const override;
+    uint32_t getWidth() const override;
     uint32_t getHeight() const override;
-    uint32_t getAscender() const override;
-    uint32_t getDescender() const override;
-    const std::vector<uint32_t> &getTextAdvance() const override;
-    size_t getTransformUnitSize() const override;
-    size_t getUVUnitSize() const override;
-    std::pair<const rendell::byte_t *, size_t> getTransforms() const override;
-    std::pair<const rendell::byte_t *, size_t> getUVs() const override;
-
-    rendell_text::String getSubText(size_t indexFrom) const override;
+    std::shared_ptr<IGlyphAtlasCache> getGlyphAtlasCache() const override;
 
     void setGlyphAtlasCache(std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache) override;
-    void setText(const rendell_text::String &value) override;
-    void setText(rendell_text::String &&value) override;
+    void supplyText(const rendell_text::String &text) override;
+    void setAutoSize(bool isAutoWith, bool isAutoHeight) override;
+    //void setWorldWrap(bool isActive);
 
     void eraseText(size_t startIndex) override;
     void eraseText(size_t startIndex, size_t count) override;
@@ -37,15 +32,22 @@ public:
     void appendText(const rendell_text::String &text) override;
 
 private:
+    std::vector<LogicalLine> parseText(const rendell_text::String &text);
+    VisualLine rasterizeString(const String &string);
+
     void updateBuffers(size_t startFrom = 0);
 
     size_t _version{0};
 
+    bool _isAutoWith{};
+    bool _isAutoHeight{};
+
+    std::shared_ptr<ITextModel> _textModel;
+
     std::shared_ptr<IGlyphAtlasCache> _glyphAtlasCache;
-    rendell_text::String _text{};
 
     struct UV {
-        size_t i;
+        size_t atlasIndex;
         float u;
         float v;
     };

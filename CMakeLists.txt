@@ -9,10 +9,20 @@ set(RENDELL_TEXT_LOGX_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx)
 
 set(SOURCES
     src/initialization.cpp
+    src/font_loading.cpp
     src/logging.cpp
     src/factory.cpp
+
+    src/Font.cpp
+    src/FontManager.cpp
+    src/MsdfgenFontManager.cpp
+
+    src/FontMetricsProvider.cpp
+    src/GlyphShaper.cpp
+    ##src/OutlineProvider.cpp
     
     src/SkylineGlyphAtlas.cpp
+    src/TextModel.cpp
     src/GlyphAtlasCache.cpp
     src/TextLayout.cpp
     src/TextRenderer.cpp
@@ -23,8 +33,16 @@ set(SOURCES
 
 set(HEADERS
     include/rendell_text/types.h
+    include/rendell_text/TextRun.h
+    include/rendell_text/font_loading.h
     include/rendell_text/initialization.h
     include/rendell_text/factory.h
+    include/rendell_text/IFont.h
+    include/rendell_text/Glyph.h
+    include/rendell_text/FontInstance.h
+    include/rendell_text/IFontMetricsProvider.h
+    include/rendell_text/IGlyphShaper.h
+    include/rendell_text/ITextModel.h
     include/rendell_text/ITextBuffer.h
     include/rendell_text/IGlyphAtlasTexture.h
     include/rendell_text/IFontRaster.h
@@ -35,6 +53,10 @@ set(HEADERS
     include/rendell_text/ITextRenderer.h
 
     internal/logging.h
+    internal/Font.h
+    internal/FontManager.h
+    internal/MsdfgenFontManager.h
+    internal/TextModel.h
     internal/SkylineGlyphAtlas.h
     internal/TextLayout.h
     internal/TextRenderer.h
@@ -91,3 +113,7 @@ set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
 set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
 add_subdirectory(msdfgen)
 target_link_libraries(rendell_text PRIVATE msdfgen-core msdfgen-ext)
+
+# HarfBuzz
+add_subdirectory(harfbuzz)
+target_link_libraries(rendell_text PRIVATE harfbuzz)
