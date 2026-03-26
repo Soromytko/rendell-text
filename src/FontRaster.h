@@ -3,6 +3,7 @@
 
 #include <rendell/oop/raii.h>
 #include <rendell_text/GlyphBitmap.h>
+#include <rendell_text/ShapeResult.h>
 
 #include "freetype.h"
 
@@ -32,6 +33,8 @@ public:
     bool rasterizeGlyphSDF(Codepoint character, GlyphBitmap &result);
     bool rasterizeGlyphMSDF(Codepoint character, GlyphBitmap &result);
     bool rasterizeGlyphMTSDF(Codepoint character, GlyphBitmap &result);
+
+    void rasterizehMSDF(Codepoint character, GlyphBitmap &result);
 
 private:
     bool rasterizeChar(Codepoint character, FT_Glyph &result);

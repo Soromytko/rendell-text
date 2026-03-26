@@ -12,6 +12,9 @@ public:
     GlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster, AtlasConfig atlasConfig = {});
     ~GlyphAtlasCache() = default;
 
+    bool contains(GlyphId glyphId) const override;
+    std::optional<GlyphView>
+
     size_t getVersion() const override;
     uint32_t getGlyphWidth() const override;
     uint32_t getGlyphHeight() const override;

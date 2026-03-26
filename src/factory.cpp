@@ -1,8 +1,11 @@
 #include <rendell_text/factory.h>
 
 #include "FontRaster.h"
+#include <FontFallbackResolver.h>
 #include <GlyphAtlasCache.h>
 #include <GlyphAtlasTexture.h>
+#include <GlyphRaster.h>
+#include <GlyphShaper.h>
 #include <TextBuffer.h>
 #include <TextLayout.h>
 #include <TextRenderer.h>
@@ -40,5 +43,17 @@ createTextRenderer(std::shared_ptr<ITextBuffer> textBuffer,
     assert(textBuffer);
     assert(atlasTexture);
     return std::make_shared<TextRenderer>(textBuffer, atlasTexture);
+}
+
+std::unique_ptr<IGlyphShaper> createGlyphShaper() {
+    return std::make_unique<GlyphShaper>();
+}
+
+std::unique_ptr<IFontFallbackResolver> createFontFallbackResolver() {
+    return std::make_unique<FontFallbackResolver>();
+}
+
+std::unique_ptr<IGlyphRaster> createGlyphRaster() {
+    return std::make_unique<GlyphRaster>();
 }
 } // namespace rendell_text

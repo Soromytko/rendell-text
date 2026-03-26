@@ -2,6 +2,7 @@
 #include "Glyph.h"
 #include <rendell_text/GlyphBitmap.h>
 #include <rendell_text/IGlyphAtlas.h>
+#include <rendell_text/types.h>
 
 #include <memory>
 
@@ -10,6 +11,8 @@ class IGlyphAtlasCache {
 public:
     IGlyphAtlasCache() = default;
     virtual ~IGlyphAtlasCache() = default;
+
+    virtual bool contains(GlyphId glyphId) const = 0;
 
     virtual size_t getVersion() const = 0;
     virtual uint32_t getGlyphWidth() const = 0;
@@ -22,5 +25,7 @@ public:
     virtual const std::vector<std::unique_ptr<IGlyphAtlas>> &getAtlases() const = 0;
 
     virtual const Glyph &getOrRasterizeGlyph(Codepoint character) = 0;
+
+    virtual void AddGlyph(GlyphId glyphId) = 0;
 };
 } // namespace rendell_text

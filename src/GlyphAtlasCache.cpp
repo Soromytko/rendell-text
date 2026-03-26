@@ -17,6 +17,11 @@ GlyphAtlasCache::GlyphAtlasCache(std::shared_ptr<IFontRaster> fontRaster, AtlasC
     assert(_atlases.size() > 0);
 }
 
+bool GlyphAtlasCache::contains(GlyphId glyphId) const {
+    const auto it = _glyphs.find(glyphId);
+    return it != _glyphs.end();
+}
+
 size_t GlyphAtlasCache::getVersion() const {
     return _version;
 }
