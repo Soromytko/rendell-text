@@ -14,14 +14,13 @@ set(SOURCES
     src/factory.cpp
 
     src/Font.cpp
-    src/FontManager.cpp
-    src/MsdfgenFontManager.cpp
     src/GlyphRaster.cpp
 
     src/FontMetricsProvider.cpp
     src/GlyphShaper.cpp
     #src/OutlineProvider.cpp
     src/FontFallbackResolver.cpp
+    src/FontLibrary.cpp
     
     src/SkylineGlyphAtlas.cpp
     src/TextModel.cpp
@@ -55,12 +54,13 @@ set(HEADERS
     include/rendell_text/ITextRenderer.h
     include/rendell_text/IFontFallbackResolver.h
     include/rendell_text/ShapeResult.h
+    include/rendell_text/RasterizeResult.h
     include/rendell_text/IGlyphRaster.h
 
+    include/rendell_text/FontHandle.h
+    
     internal/logging.h
     internal/Font.h
-    internal/FontManager.h
-    internal/MsdfgenFontManager.h
     internal/TextModel.h
     internal/SkylineGlyphAtlas.h
     internal/TextLayout.h
@@ -71,6 +71,8 @@ set(HEADERS
     internal/GlyphShaper.h
     internal/FontFallbackResolver.h
     internal/GlyphRaster.h
+
+    internal/FontLibrary.h
 
     src/FontRaster.h
     src/freetype.h

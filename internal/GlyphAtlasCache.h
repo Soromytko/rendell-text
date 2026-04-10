@@ -15,14 +15,12 @@ public:
     bool contains(GlyphId glyphId) const override;
     std::optional<GlyphView>
 
-    size_t getVersion() const override;
     uint32_t getGlyphWidth() const override;
     uint32_t getGlyphHeight() const override;
     uint32_t getAtlasCount() const override;
     uint32_t getLineHeight() const override;
     uint32_t getAscender() const override;
     uint32_t getDescender() const override;
-    std::vector<size_t> getAtlasVersions() const override;
     const std::vector<std::unique_ptr<IGlyphAtlas>> &getAtlases() const override;
 
     const Glyph &getOrRasterizeGlyph(Codepoint character) override;

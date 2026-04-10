@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 #include <glm/glm.hpp>
-#include <vector>
 
 namespace rendell_text {
 // struct GlyphMetric final {

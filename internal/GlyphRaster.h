@@ -1,10 +1,18 @@
 #pragma once
 #include <rendell_text/IGlyphRaster.h>
 
+#include <memory>
+
 namespace rendell_text {
+class IFontRaster;
+
 class GlyphRaster final : public IGlyphRaster {
 public:
-    void rasterize(const ShapeResult &shapeResult,
-                   std::shared_ptr<IGlyphAtlasCache> glyphAtlasCache, AtlasType atlasType) override;
+    GlyphRaster();
+
+    RasterizedResult rasterize(const ShapeResult &shapeResult, AtlasType atlasType) override;
+
+private:
+    std::unique_ptr<IFontRaster> _raster;
 };
 } // namespace rendell_text

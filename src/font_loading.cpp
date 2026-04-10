@@ -1,6 +1,6 @@
 #include <rendell_text/font_loading.h>
 
-#include <Font.h>
+#include <FontLibrary.h>
 #include <logging.h>
 
 #include <cassert>
@@ -32,19 +32,34 @@ static std::optional<std::vector<std::byte>> loadFontFile(const std::filesystem:
     return buffer;
 }
 
-std::shared_ptr<IFont> loadFont(const std::filesystem::path &path) {
+// std::shared_ptr<IFont> loadFont(const std::filesystem::path &path) {
+//     auto maybeFontData = loadFontFile(path);
+//     if (!maybeFontData) {
+//         return nullptr;
+//     }
+//
+//     std::vector<std::byte> fontData = std::move(maybeFontData.value());
+//     if (fontData.size() == 0) {
+//         RT_ERROR("The font file is empty: {}", path.string());
+//         return nullptr;
+//     }
+//
+//     return std::make_shared<Font>(std::move(fontData));
+// }
+
+FontHandle loadFont(const std::filesystem::path &path) {
     auto maybeFontData = loadFontFile(path);
     if (!maybeFontData) {
-        return nullptr;
+        return FontHandle::Empty;
     }
 
     std::vector<std::byte> fontData = std::move(maybeFontData.value());
     if (fontData.size() == 0) {
         RT_ERROR("The font file is empty: {}", path.string());
-        return nullptr;
+        return FontHandle::Empty;
     }
 
-    return std::make_shared<Font>(std::move(fontData));
+    return FontLibrary::getInstance()->createFont(std::move(fontData));
 }
 
 } // namespace rendell_text

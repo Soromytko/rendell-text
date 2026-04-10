@@ -4,6 +4,7 @@
 #include <rendell_text/IGlyphAtlas.h>
 #include <rendell_text/types.h>
 
+#include <cstdint>
 #include <memory>
 
 namespace rendell_text {
@@ -14,14 +15,12 @@ public:
 
     virtual bool contains(GlyphId glyphId) const = 0;
 
-    virtual size_t getVersion() const = 0;
     virtual uint32_t getGlyphWidth() const = 0;
     virtual uint32_t getGlyphHeight() const = 0;
     virtual uint32_t getAtlasCount() const = 0;
     virtual uint32_t getLineHeight() const = 0;
     virtual uint32_t getAscender() const = 0;
     virtual uint32_t getDescender() const = 0;
-    virtual std::vector<size_t> getAtlasVersions() const = 0;
     virtual const std::vector<std::unique_ptr<IGlyphAtlas>> &getAtlases() const = 0;
 
     virtual const Glyph &getOrRasterizeGlyph(Codepoint character) = 0;

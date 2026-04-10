@@ -10,10 +10,10 @@ struct ShapedGlyph {
     float offsetX;
     float offsetY;
     uint32_t cluster;
-    FontInstance fontInstance;
 };
 
 struct ShapeResult {
+    FontInstance fontInstance;
     std::vector<ShapedGlyph> shapedGlyphs;
 };
 } // namespace rendell_text
