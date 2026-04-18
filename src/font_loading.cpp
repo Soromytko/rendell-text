@@ -1,6 +1,7 @@
 #include <rendell_text/font_loading.h>
 
 #include <FontLibrary.h>
+#include <FreetypeFontData.h>
 #include <logging.h>
 
 #include <cassert>
@@ -53,13 +54,14 @@ FontHandle loadFont(const std::filesystem::path &path) {
         return FontHandle::Empty;
     }
 
-    std::vector<std::byte> fontData = std::move(maybeFontData.value());
-    if (fontData.size() == 0) {
+    std::vector<std::byte> rawFontData = std::move(maybeFontData.value());
+    if (rawFontData.size() == 0) {
         RT_ERROR("The font file is empty: {}", path.string());
         return FontHandle::Empty;
     }
 
-    return FontLibrary::getInstance()->createFont(std::move(fontData));
+    std::unique_ptr<IFontData> fontData = createFreetypeFontData(rawFontData);
+    return FontLibrary::getInstance()->storeFontData(fontData);
 }
 
 } // namespace rendell_text

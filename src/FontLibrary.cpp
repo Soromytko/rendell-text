@@ -28,7 +28,7 @@ FontLibrary::FontLibrary(size_t maxLoadedFontCount) {
     _fontSlots.resize(maxLoadedFontCount);
 }
 
-FontHandle FontLibrary::storeFontData(std::unique_ptr<IFontData> &&fontData) {
+FontHandle FontLibrary::storeFontData(std::unique_ptr<IFontData> &fontData) {
     assert(fontData);
 
     std::unique_lock<std::shared_mutex> lock(_mutex);

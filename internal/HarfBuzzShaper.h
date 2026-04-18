@@ -3,10 +3,10 @@
 #include <rendell_text/IGlyphShaper.h>
 
 namespace rendell_text {
-class GlyphShaper final : public IGlyphShaper {
+class HarfBuzzShaper final : public IGlyphShaper {
 public:
-    GlyphShaper() = default;
-    ~GlyphShaper() = default;
+    HarfBuzzShaper() = default;
+    ~HarfBuzzShaper() = default;
 
     void configure(Config config) override;
     ShapeResult shape(const TextRun &textRun, IFontFallbackResolver &fontFallbackResolver) override;

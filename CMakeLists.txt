@@ -15,9 +15,10 @@ set(SOURCES
 
     src/Font.cpp
     src/GlyphRaster.cpp
+    src/FreetypeFontData.cpp
 
     src/FontMetricsProvider.cpp
-    src/GlyphShaper.cpp
+    src/HarfBuzzShaper.cpp
     #src/OutlineProvider.cpp
     src/FontFallbackResolver.cpp
     src/FontLibrary.cpp
@@ -68,11 +69,13 @@ set(HEADERS
     internal/TextBuffer.h
     internal/GlyphAtlasCache.h
     internal/GlyphAtlasTexture.h
-    internal/GlyphShaper.h
+    internal/HarfBuzzShaper.h
     internal/FontFallbackResolver.h
     internal/GlyphRaster.h
 
     internal/FontLibrary.h
+    internal/IFontData.h
+    internal/FreetypeFontData.h
 
     src/FontRaster.h
     src/freetype.h

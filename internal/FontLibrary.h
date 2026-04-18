@@ -37,11 +37,11 @@ private:
 public:
     ~FontLibrary() = default;
 
-    FontHandle storeFontData(std::unique_ptr<IFontData> &&fontData);
+    FontHandle storeFontData(std::unique_ptr<IFontData> &fontData);
     void releaseFontData(FontHandle handle);
     bool isFontValid(FontHandle handle) const;
 
-    LockGuard readAndLock(FontHandle handle, IFontData *&fontData) const {
+    [[nodiscard]] LockGuard readAndLock(FontHandle handle, IFontData *&fontData) const {
         LockGuard lock(_mutex);
         fontData = getFontData(handle);
         return lock;

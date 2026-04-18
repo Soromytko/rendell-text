@@ -46,7 +46,7 @@ createTextRenderer(std::shared_ptr<ITextBuffer> textBuffer,
 }
 
 std::unique_ptr<IGlyphShaper> createGlyphShaper() {
-    return std::make_unique<GlyphShaper>();
+    return std::make_unique<HarfBuzzShaper>();
 }
 
 std::unique_ptr<IFontFallbackResolver> createFontFallbackResolver() {
