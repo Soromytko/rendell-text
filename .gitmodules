@@ -1,3 +1,6 @@
 [submodule "freetype"]
 	path = freetype
 	url = https://github.com/freetype/freetype.git
+[submodule "logr"]
+	path = logr
+	url = https://github.com/Soromytko/logr.git

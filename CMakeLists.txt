@@ -5,7 +5,6 @@ project(RendellText)
 set(CMAKE_CXX_STANDARD 23)
 
 set(RENDELL_TEXT_RENDELL_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../rendell)
-set(RENDELL_TEXT_LOGX_REPO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../logx)
 
 set(SOURCES
     src/TextLayout.cpp
@@ -66,3 +65,9 @@ target_include_directories(rendell_text PRIVATE internal)
 # FreeType
 add_subdirectory(freetype)
 target_link_libraries(rendell_text PRIVATE freetype)
+
+# logr
+if(NOT TARGET logr)
+    add_subdirectory(logr)
+endif()
+target_link_libraries(rendell PRIVATE logr)

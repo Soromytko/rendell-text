@@ -1,19 +1,19 @@
 #pragma once
 #include <format>
 #include <iostream>
-#include <logx/logx.h>
+#include <logr/logr.h>
 
 namespace rendell_text {
-class RTLogger final : public logx::Logger {
+class RTLogger final : public logr::Logger {
 public:
     RTLogger();
     ~RTLogger() = default;
 
 private:
-    const char *getLevelName_Unsafe(logx::Level level) const override;
+    const char *getLevelName_Unsafe(logr::Level level) const override;
 };
 
-logx::Logger *get_logger();
+logr::Logger *get_logger();
 } // namespace rendell_text
 
 #define RT_CRITICAL(formatStr, ...)                                                                \
