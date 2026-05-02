@@ -15,7 +15,7 @@ public:
     Size::Type getAtlasCount() const override { return static_cast<Size::Type>(_atlases.size()); }
 
     Info getGlyphInfo(GlyphKey key) const override;
-    std::optional<Info> findGlyphInfo(GlyphKey key) const override;
+    bool findGlyphInfo(GlyphKey key, Info &result) const override;
     PixelsRef getGlyphPixels(GlyphKey key) const override;
     PixelsRef getAtlasPixels(Size::Type atlasIndex) const override;
     std::vector<PixelsRef> getAtlasesPixels() const override;

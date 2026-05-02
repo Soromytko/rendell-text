@@ -94,9 +94,9 @@ bool GlyphRaster::rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize,
 
         result.push_back(RasterizedGlyph{
             .id = glyphId,
-            .glyphBearingX = static_cast<int>(xMin * scale - range),
-            .glyphBearingY = static_cast<int>(yMax * scale + range),
-            .glyphAdvance = static_cast<float>(advance * scale),
+            .bearingX = static_cast<float>(xMin * scale - range),
+            .bearingY = static_cast<float>(yMax * scale + range),
+            .advance = static_cast<float>(advance * scale),
             .atlasType = AtlasType::msdf,
             .bitmap =
                 GlyphBitmap{

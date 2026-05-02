@@ -3,7 +3,6 @@
 #include <rendell_text/RasterizedGlyph.h>
 
 #include <cstdint>
-#include <optional>
 
 namespace rendell_text {
 class IGlyphMultiAtlas {
@@ -14,6 +13,7 @@ public:
         float bearingX, bearingY;
         Size size;
         uint16_t index;
+        uint16_t _reserved{};
     };
 
     IGlyphMultiAtlas() = default;
@@ -23,7 +23,7 @@ public:
     virtual Size::Type getAtlasCount() const = 0;
     virtual bool contains(GlyphKey key) const = 0;
     virtual Info getGlyphInfo(GlyphKey key) const = 0;
-    virtual std::optional<Info> findGlyphInfo(GlyphKey key) const = 0;
+    virtual bool findGlyphInfo(GlyphKey key, Info &result) const = 0;
     virtual PixelsRef getGlyphPixels(GlyphKey key) const = 0;
     virtual PixelsRef getAtlasPixels(Size::Type atlasIndex) const = 0;
     virtual std::vector<PixelsRef> getAtlasesPixels() const = 0;

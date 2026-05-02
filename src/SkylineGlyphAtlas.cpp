@@ -14,21 +14,22 @@ SkylineGlyphAtlas::SkylineGlyphAtlas(Size size)
 IGlyphAtlas::Info SkylineGlyphAtlas::getGlyphInfo(GlyphKey key) const {
     const auto it = _glyphs.find(key);
     assert(it != _glyphs.end());
-    return it->second.info;
+    return makeInfo(it->second.uv, it->second.glyph);
 }
 
-std::optional<IGlyphAtlas::Info> SkylineGlyphAtlas::findGlyphInfo(GlyphKey key) const {
+bool SkylineGlyphAtlas::findGlyphInfo(GlyphKey key, Info &info) const {
     const auto it = _glyphs.find(key);
     if (it == _glyphs.end()) {
-        return std::nullopt;
+        return false;
     }
-    return it->second.info;
+    info = makeInfo(it->second.uv, it->second.glyph);
+    return true;
 }
 
 PixelsRef SkylineGlyphAtlas::getGlyphPixels(GlyphKey key) const {
     const auto it = _glyphs.find(key);
     assert(it != _glyphs.end());
-    return it->second.pixels;
+    return it->second.glyph.bitmap.pixels;
 }
 
 bool SkylineGlyphAtlas::resize(Size size) {
@@ -36,26 +37,45 @@ bool SkylineGlyphAtlas::resize(Size size) {
     return false;
 }
 
-bool SkylineGlyphAtlas::insert(GlyphId glyphId, const GlyphBitmap &bitmap,
-                               FontInstance fontInstance) {
-    if (bitmap.size.width > _size.width || bitmap.size.height > _size.height) {
+bool SkylineGlyphAtlas::insert(const RasterizedGlyph &glyph, FontInstance fontInstance) {
+    if (glyph.bitmap.size.width > _size.width || glyph.bitmap.size.height > _size.height) {
         return false;
     }
 
     Size::Type yOffset;
-    const auto bestNodeIndex = findBestNodeIndex(bitmap.size, yOffset);
+    const auto bestNodeIndex = findBestNodeIndex(glyph.bitmap.size, yOffset);
     if (bestNodeIndex < 0) {
         return false;
     }
     assert(bestNodeIndex < _skyline.size());
 
-    auto maybeUV = insertGlyph(bitmap, static_cast<Size::Type>(bestNodeIndex));
+    auto maybeUV = insertGlyph(glyph.bitmap, static_cast<Size::Type>(bestNodeIndex));
     if (!maybeUV) {
         return false;
     }
-    addSkylineSegment(bestNodeIndex, bitmap.size, yOffset);
-    _glyphs.insert({GlyphKey{glyphId, fontInstance}, {}});
+    addSkylineSegment(bestNodeIndex, glyph.bitmap.size, yOffset);
+    _glyphs.insert({GlyphKey{
+                        .id = glyph.id,
+                        .fontInstance = fontInstance,
+                    },
+                    GlyphData{
+                        .uv = maybeUV.value(),
+                        .glyph = glyph,
+                    }});
     return true;
+}
+
+SkylineGlyphAtlas::Info SkylineGlyphAtlas::makeInfo(UV uv, const RasterizedGlyph &glyph) const {
+    return Info{
+        .u0 = uv.u0,
+        .u1 = uv.u1,
+        .v0 = uv.v0,
+        .v1 = uv.v1,
+        .bearingX = glyph.bearingX,
+        .bearingY = glyph.bearingY,
+        .advance = glyph.advance,
+        .size = glyph.bitmap.size,
+    };
 }
 
 int SkylineGlyphAtlas::findBestNodeIndex(Size size, Size::Type &yOffset) const {

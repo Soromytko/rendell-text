@@ -108,7 +108,7 @@ FontHandle loadFont(const std::filesystem::path &path) {
     }
 
     std::unique_ptr<IFontData> fontData = createFontData(rawFontData);
-    if (fontData) {
+    if (!fontData) {
         RT_WARNING("Failed to initialize font: {}", path.string());
         return FontHandle::Empty;
     }

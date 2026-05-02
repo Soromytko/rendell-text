@@ -14,27 +14,33 @@ GlyphMultiAtlas::GlyphMultiAtlas(Size size, Size::Type maxAtlasCount)
     assert(_atlases.size() > 0);
 }
 
-IGlyphMultiAtlas::Info GlyphMultiAtlas::getGlyphInfo(GlyphKey key) const {
-    const auto maybeGlyphInfo = findGlyphInfo(key);
-    assert(maybeGlyphInfo);
-    return *maybeGlyphInfo;
+GlyphMultiAtlas::Info GlyphMultiAtlas::getGlyphInfo(GlyphKey key) const {
+    Info info;
+    const bool suc = findGlyphInfo(key, info);
+    assert(suc);
+    return info;
 }
 
-std::optional<IGlyphMultiAtlas::Info> GlyphMultiAtlas::findGlyphInfo(GlyphKey key) const {
+bool GlyphMultiAtlas::findGlyphInfo(GlyphKey key, Info &result) const {
     for (size_t i = 0; i < _atlases.size(); i++) {
-        const auto maybeInfo = _atlases[i].findGlyphInfo(key);
-        if (maybeInfo) {
-            return Info{
-                .x1 = maybeInfo->x1,
-                .x2 = maybeInfo->x2,
-                .y1 = maybeInfo->y1,
-                .y2 = maybeInfo->y2,
-                .size = maybeInfo->size,
+        IGlyphAtlas::Info info;
+        if (_atlases[i].findGlyphInfo(key, info)) {
+            result = Info{
+                .u0 = info.u0,
+                .u1 = info.u1,
+                .v0 = info.v0,
+                .v1 = info.v1,
+                .bearingX = info.bearingX,
+                .bearingY = info.bearingY,
+                .advance = info.advance,
+                .size = info.size,
                 .index = static_cast<decltype(Info::index)>(i),
             };
+            return true;
         }
     }
-    return std::nullopt;
+
+    return false;
 }
 
 PixelsRef GlyphMultiAtlas::getGlyphPixels(GlyphKey key) const {
@@ -96,9 +102,9 @@ bool GlyphMultiAtlas::insert(const RasterizedGlyph &glyph, FontInstance fontInst
     assert(glyph.bitmap.size.width <= atlas->getSize().width);
     assert(glyph.bitmap.size.height <= atlas->getSize().height);
 
-    if (!atlas->insert(glyph.id, glyph.bitmap, fontInstance)) {
+    if (!atlas->insert(glyph, fontInstance)) {
         atlas = addAtlas();
-        if (atlas && !atlas->insert(glyph.id, glyph.bitmap, fontInstance)) {
+        if (atlas && !atlas->insert(glyph, fontInstance)) {
             assert(false);
         }
     }
@@ -120,7 +126,7 @@ size_t GlyphMultiAtlas::getCurrentAtlasIndex() const {
 }
 
 SkylineGlyphAtlas *GlyphMultiAtlas::addAtlas() {
-    if (_maxAtlasCount >= static_cast<Size::Type>(_atlases.size())) {
+    if (_maxAtlasCount <= static_cast<Size::Type>(_atlases.size())) {
         return nullptr;
     }
     _atlases.push_back(SkylineGlyphAtlas({_size.width, _size.height}));

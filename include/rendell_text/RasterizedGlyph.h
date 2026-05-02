@@ -18,9 +18,9 @@ struct GlyphBitmap {
 
 struct RasterizedGlyph final {
     GlyphId id;
-    int glyphBearingX;
-    int glyphBearingY;
-    float glyphAdvance;
+    float bearingX;
+    float bearingY;
+    float advance;
     AtlasType atlasType;
     GlyphBitmap bitmap;
 };
