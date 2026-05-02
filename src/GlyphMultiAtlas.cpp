@@ -23,17 +23,16 @@ GlyphMultiAtlas::Info GlyphMultiAtlas::getGlyphInfo(GlyphKey key) const {
 
 bool GlyphMultiAtlas::findGlyphInfo(GlyphKey key, Info &result) const {
     for (size_t i = 0; i < _atlases.size(); i++) {
-        IGlyphAtlas::Info info;
-        if (_atlases[i].findGlyphInfo(key, info)) {
+        IGlyphAtlas::Info atlasInfo;
+        if (_atlases[i].findGlyphInfo(key, atlasInfo)) {
             result = Info{
-                .u0 = info.u0,
-                .u1 = info.u1,
-                .v0 = info.v0,
-                .v1 = info.v1,
-                .bearingX = info.bearingX,
-                .bearingY = info.bearingY,
-                .advance = info.advance,
-                .size = info.size,
+                .u0 = atlasInfo.u0,
+                .u1 = atlasInfo.u1,
+                .v0 = atlasInfo.v0,
+                .v1 = atlasInfo.v1,
+                .bearingX = atlasInfo.bearingX,
+                .bearingY = atlasInfo.bearingY,
+                .size = atlasInfo.size,
                 .index = static_cast<decltype(Info::index)>(i),
             };
             return true;

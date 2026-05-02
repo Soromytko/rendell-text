@@ -1,6 +1,7 @@
 #pragma once
+#include <rendell_text/IGlyphMultiAtlas.h>
+
 #include <SkylineGlyphAtlas.h>
-#include <rendell_text/IGlyphAtlasSet.h>
 
 namespace rendell_text {
 class GlyphMultiAtlas final : public IGlyphMultiAtlas {

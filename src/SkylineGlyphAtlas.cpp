@@ -73,7 +73,6 @@ SkylineGlyphAtlas::Info SkylineGlyphAtlas::makeInfo(UV uv, const RasterizedGlyph
         .v1 = uv.v1,
         .bearingX = glyph.bearingX,
         .bearingY = glyph.bearingY,
-        .advance = glyph.advance,
         .size = glyph.bitmap.size,
     };
 }
@@ -98,7 +97,7 @@ int SkylineGlyphAtlas::findBestNodeIndex(Size size, Size::Type &yOffset) const {
             continue;
         }
 
-        assert(bestNodeIndex < _skyline.size());
+        assert(bestNodeIndex < static_cast<int>(_skyline.size()));
         if (bestNodeIndex < 0 || node.y < _skyline[static_cast<uint32_t>(bestNodeIndex)].y) {
             yOffset = maxY - node.y;
             bestNodeIndex = static_cast<int>(i);

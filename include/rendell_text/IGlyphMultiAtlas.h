@@ -8,12 +8,11 @@ namespace rendell_text {
 class IGlyphMultiAtlas {
 public:
     struct Info {
-        float x1, x2;
-        float y1, y2;
+        float u0, u1;
+        float v0, v1;
         float bearingX, bearingY;
         Size size;
         uint16_t index;
-        uint16_t _reserved{};
     };
 
     IGlyphMultiAtlas() = default;

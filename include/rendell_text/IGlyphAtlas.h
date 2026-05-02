@@ -9,7 +9,6 @@ public:
         float u0, u1;
         float v0, v1;
         float bearingX, bearingY;
-        float advance;
         Size size;
     };
 
