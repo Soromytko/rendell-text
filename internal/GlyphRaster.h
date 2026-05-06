@@ -15,6 +15,10 @@ public:
                               AtlasType atlasType) override;
 
 private:
+    bool rasterizeBitmap(std::span<const GlyphId> glyphs, Size fontSize, const MSDF_Resource &msdf,
+                       RasterizedGlyphList &result) const;
+    bool rasterizeSDF(std::span<const GlyphId> glyphs, Size fontSize, const MSDF_Resource &msdf,
+                       RasterizedGlyphList &result) const;
     bool rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize, const MSDF_Resource &msdf,
                        RasterizedGlyphList &result) const;
 };
