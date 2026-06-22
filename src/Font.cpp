@@ -85,13 +85,15 @@ bool create_HurfBuzz_stuff(std::span<const std::byte> fontData, HB_Resource &res
     result.blob.reset(blob);
     result.face.reset(face);
     result.font.reset(font);
+
     return true;
 }
 
 static std::unique_ptr<IFontData> createFontData(std::span<const std::byte> rawFontData) {
     std::unique_ptr<SharedFontData> fontData = std::make_unique<SharedFontData>();
-    create_Msdfgen_stuff(rawFontData, fontData->msdf);
-    create_HurfBuzz_stuff(rawFontData, fontData->hb);
+    fontData->rawData.assign(rawFontData.begin(), rawFontData.end());
+    create_Msdfgen_stuff(fontData->rawData, fontData->msdf);
+    create_HurfBuzz_stuff(fontData->rawData, fontData->hb);
     return fontData;
 }
 

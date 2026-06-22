@@ -18,6 +18,8 @@ set(SOURCES
     
     src/SkylineGlyphAtlas.cpp
     src/GlyphMultiAtlas.cpp
+
+    src/utils/BmpSaver.cpp
 )
 
 set(HEADERS
@@ -55,6 +57,8 @@ set(HEADERS
     internal/SharedFontData.h
 
     internal/freetype.h
+
+    internal/utils/BmpSaver.h
 )
 
 set(SHADERS

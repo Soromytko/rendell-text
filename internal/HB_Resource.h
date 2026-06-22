@@ -1,6 +1,5 @@
 #pragma once
 #include <hb.h>
-
 #include <memory>
 
 namespace rendell_text {
@@ -13,11 +12,11 @@ struct HB_Resource final {
         }
     };
 
-    ~HB_Resource() {
-        font.reset();
-        face.reset();
-        blob.reset();
-    }
+    HB_Resource() = default;
+    HB_Resource(HB_Resource &&) noexcept = default;
+    HB_Resource &operator=(HB_Resource &&) noexcept = default;
+
+    ~HB_Resource() { reset(); }
 
     using BlobDeleter = Deleter<hb_blob_t, hb_blob_destroy>;
     using FaceDeleter = Deleter<hb_face_t, hb_face_destroy>;
@@ -27,7 +26,13 @@ struct HB_Resource final {
     std::unique_ptr<hb_face_t, FaceDeleter> face;
     std::unique_ptr<hb_font_t, FontDeleter> font;
 
-    inline bool isValid() const { return font != nullptr; }
+    inline bool isValid() const noexcept { return font && face && blob; }
+
+    inline void reset() {
+        font.reset();
+        face.reset();
+        blob.reset();
+    }
 };
 
 } // namespace rendell_text

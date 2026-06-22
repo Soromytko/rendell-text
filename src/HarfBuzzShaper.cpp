@@ -53,11 +53,18 @@ struct HB_Buffer_Deleter {
 
 bool HarfBuzzShaper::doShape(const HB_Resource &hb, const TextRun &textRun,
                              ShapeResult &result) const {
+    assert(hb.face);
+
     result.shapedGlyphs.clear();
     result.fontInstance = textRun.fontInstance;
 
     std::unique_ptr<hb_buffer_t, HB_Buffer_Deleter> localBuf(hb_buffer_create());
     auto buf = localBuf.get();
+
+    unsigned int glyphCoufnt = hb_face_get_glyph_count(hb.face.get());
+
+    hb_font_set_scale(hb.font.get(), static_cast<int>(textRun.fontInstance.size.width * 64.0f),
+                      static_cast<int>(textRun.fontInstance.size.height * 64.0f));
 
     add_text_to_buffer(buf, textRun.text);
     hb_buffer_guess_segment_properties(buf);
