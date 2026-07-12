@@ -6,7 +6,7 @@
 namespace rendell_text {
 class GlyphMultiAtlas final : public IGlyphMultiAtlas {
 public:
-    GlyphMultiAtlas(Size size, Size::Type maxAtlasCount);
+    GlyphMultiAtlas(AtlasType type, Size size, Size::Type maxAtlasCount);
     ~GlyphMultiAtlas() = default;
 
     bool contains(GlyphKey key) const override { return findAtlas(key) != nullptr; }
@@ -31,6 +31,7 @@ private:
     SkylineGlyphAtlas *addAtlas();
     SkylineGlyphAtlas *getCurrentAtlas();
 
+    AtlasType _type;
     Size _size;
     Size::Type _maxAtlasCount;
     std::vector<SkylineGlyphAtlas> _atlases{};

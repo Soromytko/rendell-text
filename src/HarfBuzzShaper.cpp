@@ -19,7 +19,7 @@ HarfBuzzShaper::HarfBuzzShaper(ShaperConfig config)
 ShapeResult HarfBuzzShaper::shape(const TextRun &textRun) {
     ShapeResult result{
         .fontInstance = textRun.fontInstance,
-        .shapedGlyphs = ShapedGlyphList(textRun.text.length()),
+        .glyphs = ShapedGlyphList(textRun.text.length()),
     };
     shape(textRun, result);
     return result;
@@ -55,7 +55,7 @@ bool HarfBuzzShaper::doShape(const HB_Resource &hb, const TextRun &textRun,
                              ShapeResult &result) const {
     assert(hb.face);
 
-    result.shapedGlyphs.clear();
+    result.glyphs.clear();
     result.fontInstance = textRun.fontInstance;
 
     std::unique_ptr<hb_buffer_t, HB_Buffer_Deleter> localBuf(hb_buffer_create());
@@ -74,10 +74,10 @@ bool HarfBuzzShaper::doShape(const HB_Resource &hb, const TextRun &textRun,
     hb_glyph_info_t *glyphInfo = hb_buffer_get_glyph_infos(buf, &glyphCount);
     hb_glyph_position_t *glyphPos = hb_buffer_get_glyph_positions(buf, &glyphCount);
 
-    result.shapedGlyphs.reserve(static_cast<size_t>(glyphCount));
+    result.glyphs.reserve(static_cast<size_t>(glyphCount));
 
     for (size_t i = 0; i < glyphCount; ++i) {
-        result.shapedGlyphs.push_back(ShapedGlyph{
+        result.glyphs.push_back(ShapedGlyph{
             .id = static_cast<decltype(ShapedGlyph::id)>(glyphInfo[i].codepoint),
             .advanceX = static_cast<decltype(ShapedGlyph::advanceX)>(glyphPos[i].x_advance / 64.0f),
             .advanceY = static_cast<decltype(ShapedGlyph::advanceY)>(glyphPos[i].y_advance / 64.0f),
@@ -87,7 +87,7 @@ bool HarfBuzzShaper::doShape(const HB_Resource &hb, const TextRun &textRun,
         });
     }
 
-    return !result.shapedGlyphs.empty();
+    return !result.glyphs.empty();
 }
 
 } // namespace rendell_text

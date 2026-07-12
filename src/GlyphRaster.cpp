@@ -179,14 +179,14 @@ bool GlyphRaster::rasterizeSDF(std::span<const GlyphId> glyphs, Size fontSize,
             .width = static_cast<Size::Type>(fontSize.width),
             .height = static_cast<Size::Type>(fontSize.height),
         };
-        const size_t pixelsSize = sizeof(float) * bitmapSize.width * bitmapSize.height * 3;
+        const size_t pixelsSize = sizeof(float) * bitmapSize.area() * 3;
         if (pixelsSize == 0) {
             assert(false); ////////TODO
             continue;
         }
 
         const float *pixelsPtr = (const float *)msdf;
-        size_t totalBytes = fontSize.width * fontSize.height * 3 * sizeof(float);
+        size_t totalBytes = fontSize.area() * 3 * sizeof(float);
         std::vector<std::byte> byte_vector(totalBytes);
         std::memcpy(byte_vector.data(), pixelsPtr, totalBytes);
 
@@ -224,7 +224,7 @@ bool GlyphRaster::rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize,
     const msdfgen::Vector2 msdfScale(scale, scale);
     const msdfgen::Vector2 frame(fontSize.width, fontSize.height);
 
-    std::vector<float> pixelBufferCache(fontSize.width * fontSize.height * 3);
+    std::vector<float> pixelBufferCache(fontSize.area() * 3);
 
     for (const GlyphId glyphId : glyphs) {
         shape.contours.clear();
@@ -254,7 +254,7 @@ bool GlyphRaster::rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize,
             .width = static_cast<Size::Type>(std::ceil(right - left) + 2 * padding),
             .height = static_cast<Size::Type>(std::ceil(top - bottom) + 2 * padding),
         };
-        const size_t pixelsSize = bitmapSize.width * bitmapSize.height * 3;
+        const size_t pixelsSize = bitmapSize.area() * 3;
         if (pixelsSize == 0) {
             assert(false); ////////TODO
             continue;
@@ -280,9 +280,9 @@ bool GlyphRaster::rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize,
             .bitmap =
                 GlyphBitmap{
                     .size = bitmapSize,
-                    .pixels = [width = bitmapSize.width, height = bitmapSize.height,
+                    .pixels = [size = bitmapSize,
                                data = pixelBufferCache.data()]() -> std::vector<std::byte> {
-                        std::vector<std::byte> bytes(width * height * 4);
+                        std::vector<std::byte> bytes(size.area() * 4);
 
                         const auto toByte = [](float v) -> std::byte {
                             v = std::clamp(v, 0.0f, 1.0f);
@@ -290,7 +290,7 @@ bool GlyphRaster::rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize,
                                 static_cast<uint8_t>(std::round(v * 255.0f)));
                         };
 
-                        for (size_t i = 0; i < width * height; ++i) {
+                        for (size_t i = 0; i < size.area(); ++i) {
                             bytes[i * 4 + 0] = toByte(data[i * 3 + 0]);
                             bytes[i * 4 + 1] = toByte(data[i * 3 + 1]);
                             bytes[i * 4 + 2] = toByte(data[i * 3 + 2]);

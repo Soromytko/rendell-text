@@ -5,8 +5,9 @@
 #include <logging.h>
 
 namespace rendell_text {
-GlyphMultiAtlas::GlyphMultiAtlas(Size size, Size::Type maxAtlasCount)
-    : _size(size)
+GlyphMultiAtlas::GlyphMultiAtlas(AtlasType type, Size size, Size::Type maxAtlasCount)
+    : _type(type)
+    , _size(size)
     , _maxAtlasCount(maxAtlasCount) {
     assert(_size.height > 0 && _size.width > 0);
     assert(_maxAtlasCount > 0);
@@ -62,7 +63,7 @@ std::vector<PixelsRef> GlyphMultiAtlas::getAtlasesPixels() const {
 
 PixelsRef GlyphMultiAtlas::getPixels() const {
     if (_shouldPixelsCacheBeUpdated) {
-        _pixelsCache.resize(_size.width * _size.height * sizeof(std::byte));
+        _pixelsCache.resize(_size.area() * bytesPerPixel(_type) * _atlases.size());
         auto it = _pixelsCache.begin();
         for (const SkylineGlyphAtlas &atlas : _atlases) {
             assert(atlas.getSize().width == _size.width && atlas.getSize().height == _size.height);
@@ -80,6 +81,10 @@ bool GlyphMultiAtlas::resize(Size size) {
 }
 
 bool GlyphMultiAtlas::insert(const RasterizedGlyph &glyph, FontInstance fontInstance) {
+    if (_type != glyph.atlasType) {
+        return false;
+    }
+
     const auto glyphSize = glyph.bitmap.size;
     if (glyphSize.width >= _size.width || glyphSize.height > _size.height) {
         RT_WARNING("Glyph[ID: {}].size ({}, {}) > Atlas.size ({}, {})",
@@ -128,7 +133,7 @@ SkylineGlyphAtlas *GlyphMultiAtlas::addAtlas() {
     if (_maxAtlasCount <= static_cast<Size::Type>(_atlases.size())) {
         return nullptr;
     }
-    _atlases.push_back(SkylineGlyphAtlas({_size.width, _size.height}));
+    _atlases.push_back(SkylineGlyphAtlas(_type, Size{_size.width, _size.height}));
     return &_atlases[_atlases.size() - 1];
 }
 

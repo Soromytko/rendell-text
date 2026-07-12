@@ -17,6 +17,6 @@ using ShapedGlyphList = std::vector<ShapedGlyph>;
 
 struct ShapeResult {
     FontInstance fontInstance;
-    ShapedGlyphList shapedGlyphs;
+    ShapedGlyphList glyphs;
 };
 } // namespace rendell_text

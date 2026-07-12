@@ -19,11 +19,12 @@ std::unique_ptr<IFontFallbackResolver> createFontFallbackResolver() {
     return std::make_unique<FontFallbackResolver>();
 }
 
-std::unique_ptr<IGlyphAtlas> createAtlas(Size size) {
-    return std::make_unique<SkylineGlyphAtlas>(size);
+std::unique_ptr<IGlyphAtlas> createAtlas(AtlasType type, Size size) {
+    return std::make_unique<SkylineGlyphAtlas>(type, size);
 }
 
-std::unique_ptr<IGlyphMultiAtlas> createMultiAtlas(Size size, Size::Type maxAtlasCount) {
-    return std::make_unique<GlyphMultiAtlas>(size, maxAtlasCount);
+std::unique_ptr<IGlyphMultiAtlas> createMultiAtlas(AtlasType type, Size size,
+                                                   Size::Type maxAtlasCount) {
+    return std::make_unique<GlyphMultiAtlas>(type, size, maxAtlasCount);
 }
 } // namespace rendell_text

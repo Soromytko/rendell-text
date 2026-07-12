@@ -15,7 +15,8 @@ class IGlyphRaster;
 std::unique_ptr<IGlyphShaper> createGlyphShaper(ShaperConfig config = {});
 std::unique_ptr<IGlyphRaster> createGlyphRaster();
 std::unique_ptr<IFontFallbackResolver> createFontFallbackResolver();
-std::unique_ptr<IGlyphAtlas> createAtlas(Size size);
-std::unique_ptr<IGlyphMultiAtlas> createMultiAtlas(Size size, Size::Type maxAtlasCount = 10);
+std::unique_ptr<IGlyphAtlas> createAtlas(AtlasType type, Size size);
+std::unique_ptr<IGlyphMultiAtlas> createMultiAtlas(AtlasType type, Size size,
+                                                   Size::Type maxAtlasCount = 10);
 
 } // namespace rendell_text

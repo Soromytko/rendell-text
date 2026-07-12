@@ -4,13 +4,6 @@
 #include <vector>
 
 namespace rendell_text {
-enum class AtlasType {
-    bitmap,
-    sdf,
-    msdf,
-    mtsdf,
-};
-
 struct GlyphBitmap {
     Size size;
     std::vector<std::byte> pixels;

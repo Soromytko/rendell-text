@@ -58,6 +58,7 @@ set(HEADERS
 
     internal/freetype.h
 
+    internal/algorithms/Skyline.h
     internal/utils/BmpSaver.h
 )
 

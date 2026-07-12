@@ -1,7 +1,8 @@
 #pragma once
-#include <rendell_text/IGlyphAtlas.h>
-
 #include <GlyphKey.h>
+#include <algorithms/Skyline.h>
+#include <rendell_text/IGlyphAtlas.h>
+#include <rendell_text/types.h>
 
 #include <optional>
 #include <unordered_map>
@@ -10,7 +11,7 @@
 namespace rendell_text {
 class SkylineGlyphAtlas final : public IGlyphAtlas {
 public:
-    SkylineGlyphAtlas(Size size);
+    SkylineGlyphAtlas(AtlasType type, Size size);
     ~SkylineGlyphAtlas() = default;
 
     Size getSize() const override { return _size; }
@@ -45,14 +46,14 @@ private:
 
     inline Info makeInfo(UV uv, const RasterizedGlyph &glyph) const;
 
-    int findBestNodeIndex(Size size, Size::Type &yOffset) const;
-    std::optional<UV> insertGlyph(const GlyphBitmap &bitmap, size_t nodeInsertIndex);
-    void addSkylineSegment(Size::Type index, Size size, Size::Type yOffset);
+    std::optional<UV> insertGlyph(Size::Type x, Size::Type y,
+                                  const GlyphBitmap &bitmap);
 
+    AtlasType _type;
     Size _size;
+    Skyline _skyline;
     size_t _currentAtlasIndex{};
     std::unordered_map<GlyphKey, GlyphData> _glyphs{};
-    std::vector<SkylineNode> _skyline{};
     std::vector<std::byte> _pixels{};
 };
 } // namespace rendell_text
