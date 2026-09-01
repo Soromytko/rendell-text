@@ -80,8 +80,7 @@ RasterizedGlyph GlyphRaster::rasterize(GlyphId glyphId, FontInstance fontInstanc
         assert(false);
     }
     }
-    assert(rasterisedGlyphs.size() == 1);
-    return rasterisedGlyphs[0];
+    return !rasterisedGlyphs.empty() ? rasterisedGlyphs[0] : RasterizedGlyph{};
 }
 
 bool GlyphRaster::rasterizeBitmap(std::span<const GlyphId> glyphs, Size fontSize,
@@ -234,6 +233,9 @@ bool GlyphRaster::rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize,
             RT_ERROR(L"Failed to load GlyphId[{}] using msdfgen", static_cast<size_t>(glyphId));
             return false;
         }
+        if (shape.contours.empty()) {
+            continue;
+        }
         shape.normalize();
         msdfgen::edgeColoringSimple(shape, 3.0);
 
@@ -256,7 +258,7 @@ bool GlyphRaster::rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize,
         };
         const size_t pixelsSize = bitmapSize.area() * 3;
         if (pixelsSize == 0) {
-            assert(false); ////////TODO
+            RT_WARNING("Glyph[{}] has zero dimensions ({}x{})", static_cast<size_t>(glyphId), bitmapSize.width, bitmapSize.height);
             continue;
         }
 
@@ -266,10 +268,8 @@ bool GlyphRaster::rasterizeMSDF(std::span<const GlyphId> glyphs, Size fontSize,
         msdfgen::BitmapRef<float, 3> msdf(pixelBufferCache.data(),
                                           static_cast<int>(bitmapSize.width),
                                           static_cast<int>(bitmapSize.height));
-        // msdfgen::Bitmap<float, 3> msdf(bitmapSize.width, bitmapSize.height);
         msdfgen::generateMSDF(msdf, shape, projection, range);
-        saveToBmp(pixelBufferCache.data(), bitmapSize, "output_msdf.png");
-        // exit(0);
+        // saveToBmp(pixelBufferCache.data(), bitmapSize, "output_msdf.png");
 
         result.push_back(RasterizedGlyph{
             .id = glyphId,
